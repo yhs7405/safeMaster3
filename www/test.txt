@@ -1,0 +1,31 @@
+				
+	$stmt = $pdo->prepare("SELECT num pn, name pname, ecount_code, ecount_name, tkind, lkind FROM item WHERE winwin_code=$pn ");
+	$stmt->execute();
+	$stmt->setFetchMode(PDO::FETCH_ASSOC);
+	$row = $stmt->fetch();
+
+
+	$sql = "insert into wms_cart (jp_code,pallet_code,ecount_code,qty,cart_regist_id,cart_regist_date) values (";
+	$sql.= ":jp_code,:pallet_code,:ecount_code,:qty,:cart_regist_id,:cart_regist_date)";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->bindParam(":jp_code",$jp_code, PDO::PARAM_STR);
+	$stmt->bindParam(":pallet_code",$pallet_code, PDO::PARAM_STR);
+	$stmt->bindParam(":ecount_code",$ecount_code, PDO::PARAM_STR);
+	$stmt->bindParam(":qty",$qty, PDO::PARAM_INT);
+	$stmt->bindParam(":cart_regist_id",$_SESSION["ADM_ID"], PDO::PARAM_STR);
+	$stmt->bindParam(":cart_regist_date",$datex, PDO::PARAM_STR);
+	$stmt->execute();
+
+	$sql= "select * from wms_location where location_code=:location_code";
+	$stmt = $pdo->prepare($sql);
+	$stmt->bindParam(":location_code",$location_code, PDO::PARAM_STR);
+	$stmt->execute();
+	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+	//한줄 쿼리
+	$total = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+	$apage = ceil($total / $pg);
+
+	//한줄 쿼리2
+	$last_id = $pdo->query('SELECT max(idx) FROM wms_com')->fetchColumn();

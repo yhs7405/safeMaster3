@@ -1,0 +1,233 @@
+<?	include ("../../include/dbconn.php");
+	include ("../../include/login_ch.php");
+	include ("../../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_member_upload";
+
+	$h_name		=	trim($_REQUEST[h_name]);
+	$gubun		=	trim($_REQUEST[gubun]);
+
+
+	$list_num		=	trim($_REQUEST[list_num]);
+	$page			=	trim($_REQUEST[page]);
+	$view_num		=	trim($_REQUEST[list_num]);	//한라인에 몇개를 출력할건지//
+	$Page_List		=	10;							//링크페이지를 몇개씩 보여줄건지.. 1 / 2 / 3
+	if(!$view_num)	$view_num=	50;					//리스트 갯수
+
+	$wherequery = " where 1=1  ";
+	if($h_name!="") 	$wherequery.= " and h_idx in (select h_idx from tbl_hyunjang_info where h_name like '%{$h_name}%')  ";
+
+
+	$rows_total = db_count_all($board_dbname,$wherequery);
+
+?>
+
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+<title>CS돌이</title>
+<?include ("../../include/common.php");?>
+</head>
+
+<body>
+
+<!--header 시작-->
+	<?include ("../../include/header.php");?>
+<!--header 종료-->
+
+
+<!--top-메뉴시작-->
+	<?include ("../../include/header_menu.php");?>
+<!--top-메뉴종료-->
+
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+
+<script>
+
+$(function() {
+		$( ".datepickx" ).datepicker({
+			autosize: true,
+			showOn: "button",
+			buttonImage: "/images/calendar.gif",
+			buttonImageOnly: true,
+			changeMonth: true,
+			changeYear: true,
+			dateFormat: "yymmdd",
+			dayNamesShort:["일","월","화","수","목","금","토"],
+			monthNamesShort:["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"]
+		});
+	 $("img.ui-datepicker-trigger").attr("style", "margin-bottom:4px; vertical-align:middle; cursor: Pointer;");
+});
+$( ".datepickx" ).datepicker( "option", "dayNamesShort",  [ "Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam" ] );
+</script>
+
+
+<div id="content">
+
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" title="Go to Home" class="tip-bottom">비용관련</a> <a href="#" class="current">회원데이터 업로드</a> </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+
+		<div class="widget-content nopadding">
+		<div  style="width:100%;background-color:#EFEFEF;border-top:1px solid #e7e7e7;border-left:1px solid #e7e7e7;border-right:1px solid #e7e7e7;">
+		<form name=ffx method=post>
+		<table class="table table-bordered table-striped top_box" style="border-right:1px solid #e7e7e7;">
+		  <thead>
+			<tr style="text-align:left;border-right:0px;width:45%;">
+			  <th style="text-align:left;margin-top:20px;" valign="top">
+				  &nbsp;&nbsp;&nbsp;&nbsp;현 장 명&nbsp;&nbsp;&nbsp;<input type=text name="h_name" value="<?=$h_name?>" style="width:200px;">
+				  &nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-success" onclick="javascript:f_submit();" style="background-color:#4374D9;height:30px;width:60px;margin-top:-2px;">조회</button>
+			  </th>
+			  <th style="text-align:right;border-left:0px;">
+					<button type="button" class="btn btn-success" onclick="javascript:f_mem_upload('');"  style="background-color:#F29661;">신규현장 엑셀 업로드</button>&nbsp;&nbsp;
+			  </th>
+			</tr>
+		  </thead>
+		</table>
+		</div>
+		</form>
+		</div>
+
+
+        <div class="widget-box">
+          <div class="widget-content nopadding">
+
+
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>현장명</th>
+                  <th>최초업로드</th>
+                  <th>최종업로드</th>
+                  <th>회원수</th>
+                  <th>업로드</th>
+                </tr>
+              </thead>
+              <tbody>
+
+	<?
+	$Link_Value = "?list_num={$view_num}&s_gubun=$s_gubun&s_search=$s_search";
+	$Page_link = _Make_Link($rows_total,$view_num,$Page_List,$page,$Link_Value,$img_pp,$img_p,$img_nn,$img_n);
+
+	$sql = "select * from $board_dbname  $wherequery order by s_upload_date desc limit $Page_link[start],$view_num ";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	if($rows > 0){
+		if($_REQUEST[page]==""){$page=1;}else{$page=$_REQUEST[page];}
+		$T=1;
+		while($row = $stmt->fetch()){
+		?>
+						<input type=hidden name="h_idx_<?=$i?>" value="<?=$row[h_idx]?>">
+
+                <tr class="odd gradeX">
+                  <td style="text-align:center;"><?=($page-1)*$list_num+$T?></td>
+                  <td style="text-align:center;"><?=f_hyunjang_name($row[h_idx])?></td>
+                  <td style="text-align:center;"><?=f_date($row[s_upload_date])?></td>
+                  <td style="text-align:center;"><?=f_date($row[e_upload_date])?></td>
+                  <td style="text-align:center;"><a href="javascript:f_excel('<?=$row[h_idx]?>');"  style="text-decoration:underline;color:red;">총 <?=$row[member_cnt]?> 건</td>
+                  <td style="text-align:center;">
+								  	<button type="button" class="btn btn-success" onclick="javascript:f_mem_upload(<?=$row[h_idx]?>,<?=$row[e_upload_date]?>);"  style="background-color:#F29661;">엑셀 재 업로드</button>
+								  </td>
+                </tr>
+
+	<?$T++;}
+}else{?>
+              <tr class="title">
+                <td colspan=9 align=center>내용이 없습니다.</td>
+              </tr>
+<?}?>
+
+
+              </tbody>
+            </table>
+
+
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--bottom-시작-->
+	<?include ("../../include/bottom.php");?>
+<!--bottom-종료-->
+
+
+<script src="/js/common.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+<script>
+	
+//	windows.f_mem_upload = function(){
+function f_mem_upload(h_idx){//기본상세조회
+	//alert("code : ");
+	var url    ="/02_cost/5_memupload/upload.php";
+	if(h_idx!=""){
+		url = url+"?h_idx="+encodeURI(h_idx);
+		}
+	var title  = "listpops";
+	var status = "toolbar=no,directories=no,scrollbars=yes,resizable=no,status=no,menubar=no,width=1400, height=840, top=0,left=20"; 
+	var a = window.open(url, title,status);
+	a.focus();
+}
+
+function f_jungsan(h_idx){
+	if(confirm("정산 진행하시겠습니까?")){
+			$("#jj_button").hide();
+			$("#mm").html("<font color='blue'>처리중..</font>");
+			$.ajax({
+				type:"GET",
+				url:'./process_jungsan.php',
+				dataType:"text",
+				data:{h_idx:h_idx},
+				timeout : 30000,
+				success:function (req) {
+					if(req=="OK"){
+						alert("정산 처리가 완료되었습니다. ");
+						$("#jj_button").show();
+						location.reload();
+					}
+				},
+				error : function(request, status, error) {
+					//통신 에러 발생시 처리
+					//alert("code : " + request.status + "\r\nmessage : " + request.reponseText);
+				}
+			});
+	}
+}
+
+function f_excel(h_idx){
+		location.href = "excel_down.php?h_idx="+h_idx;
+}
+
+function f_submit(){
+	//alert("code : ");
+	document.ffx.action = "index.html";
+	document.ffx.submit();
+}
+
+</script>
+
+</body>
+</html>

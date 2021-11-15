@@ -1,0 +1,265 @@
+<?	include ("../../include/dbconn.php");
+	include ("../../include/login_ch.php");
+	include ("../../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_junib";
+
+	$h_idx		=	trim($_REQUEST[h_idx]);
+	$gubun		=	trim($_REQUEST[gubun]);
+
+
+	$list_num		=	trim($_REQUEST[list_num]);
+	$page			=	trim($_REQUEST[page]);
+	$view_num		=	trim($_REQUEST[list_num]);	//한라인에 몇개를 출력할건지//
+	$Page_List		=	10;							//링크페이지를 몇개씩 보여줄건지.. 1 / 2 / 3
+	if(!$view_num)	$view_num=	50;					//리스트 갯수
+
+	$wherequery = " where 1=1  ";
+	if($h_idx!="") 	$wherequery.= " and h_idx={$h_idx}  ";
+
+	if($gubun=="ing") {  //비용청구일이 null이 0 초과일때
+		$s1 = " and h_idx in (SELECT h_idx FROM tbl_sugum WHERE biyong_c_date <> '' GROUP BY h_idx)";
+		$wherequery.= $s1;
+	}else if($gubun=="end"){  //비용청구일이 null이 없을때 값이 다 들어가 있을때
+		$s1 = " and (SELECT ifnull(count(h_idx),0) FROM tbl_sugum WHERE biyong_c_date<>'' GROUP BY h_idx)=0";
+		$wherequery.= $s1;
+	}
+
+
+	$rows_total = db_count_all($board_dbname,$wherequery);
+
+?>
+
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+<title>재무돌이</title>
+<?include ("../../include/common.php");?>
+</head>
+
+<body>
+
+<!--header 시작-->
+	<?include ("../../include/header.php");?>
+<!--header 종료-->
+
+
+<!--top-메뉴시작-->
+	<?include ("../../include/header_menu.php");?>
+<!--top-메뉴종료-->
+
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+
+<script>
+
+$(function() {
+		$( ".datepickx" ).datepicker({
+			autosize: true,
+			showOn: "button",
+			buttonImage: "/images/calendar.gif",
+			buttonImageOnly: true,
+			changeMonth: true,
+			changeYear: true,
+			dateFormat: "yymmdd",
+			dayNamesShort:["일","월","화","수","목","금","토"],
+			monthNamesShort:["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"]
+		});
+	 $("img.ui-datepicker-trigger").attr("style", "margin-bottom:4px; vertical-align:middle; cursor: Pointer;");
+});
+$( ".datepickx" ).datepicker( "option", "dayNamesShort",  [ "Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam" ] );
+</script>
+
+
+<div id="content">
+
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" title="Go to Home" class="tip-bottom">기본정보</a> <a href="#" class="current">정산보고서조회</a> </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+
+		<div class="widget-content nopadding">
+		<div  style="width:100%;background-color:#EFEFEF;border-top:1px solid #e7e7e7;border-left:1px solid #e7e7e7;border-right:1px solid #e7e7e7;">
+		<form name=ffx method=post>
+		<table style="background-color:#EFEFEF;">
+		  <thead>
+			<tr>
+			  <th style="text-align:left;margin-top:20px;" valign="top">
+				  &nbsp;&nbsp;&nbsp;&nbsp;현 장 명&nbsp;&nbsp;&nbsp;<?=f_hyunjang_select("h_idx",$h_idx," style='width:245px;margin-top:7px;'")?>&nbsp;&nbsp;
+				  &nbsp;&nbsp;&nbsp;&nbsp;종료여부&nbsp;&nbsp;&nbsp;<select name=gubun style="width:100px;margin-top:7px;">
+				  <option value="" >--선택--</option>
+				  <option value="ing" <?if($gubun=="ing"){?>selected<?}?>>진행중</option>
+				  <option value="end" <?if($gubun=="end"){?>selected<?}?>>종료</option>
+				  </select>&nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-success" onclick="javascript:f_submit();" style="background-color:#4374D9;height:30px;width:60px;margin-top:-2px;">조회</button>
+			  </th>
+			</tr>
+		  </thead>
+		</table></div>
+		</form>
+		</div>
+
+
+        <div class="widget-box">
+          <div class="widget-content nopadding">
+
+
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>현장명</th>
+                  <th>소유권이전</th>
+                  <th>근저당설정</th>
+                  <th>등기첫접수일</th>
+                  <th>정산보고서</th>
+                  <th colspan=2>출력정산</th>
+                  <th>정산보고엑셀</th>
+                </tr>
+              </thead>
+              <tbody>
+
+	<?
+	$Link_Value = "?list_num={$view_num}&s_gubun=$s_gubun&s_search=$s_search";
+	$Page_link = _Make_Link($rows_total,$view_num,$Page_List,$page,$Link_Value,$img_pp,$img_p,$img_nn,$img_n);
+
+	$sql = "select h_idx from tbl_junib  $wherequery group by h_idx  order by idx desc limit $Page_link[start],$view_num ";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	if($rows > 0){
+		if($_REQUEST[page]==""){$page=1;}else{$page=$_REQUEST[page];}
+		$T=1;
+		while($row = $stmt->fetch()){
+
+		//이전
+		$sql = "select count(*) as ss from tbl_junib where h_idx='{$row[h_idx]}' ";
+		//echo $sql;
+		$ii = db_query_fetch($sql);
+
+		//이전 첫등기접수일
+		$sql = "select g1 from tbl_junib where h_idx='{$row[h_idx]}' order by g1 asc limit 1 ";
+		//echo $sql;
+		$id = db_query_fetch($sql);
+
+		//설정
+		$sql = "select count(*) as ss from tbl_suljung where h_idx='{$row[h_idx]}' ";
+		//echo $sql;
+		$sj = db_query_fetch($sql);
+
+
+		//$sql = "SELECT ifnull(count(h_idx),0) as cc FROM tbl_sugum WHERE biyong_c_date='' or biyong_c_date is null and h_idx='{$row[h_idx]}' GROUP BY h_idx";
+		$sql = "SELECT ifnull(count(h_idx),0) as cc FROM tbl_junib WHERE ijj_w_date='' or ijj_w_date is null and h_idx='{$row[h_idx]}' ";
+		$sj1 = db_query_fetch($sql);
+
+		if($sj1[cc]==0){
+			$status = "출력가능";
+		}else{
+			$status = "진행중";
+		}
+
+		//$status = "완료";
+
+		//설정
+		$sql = "select * from tbl_jungsan_report where h_idx='{$row[h_idx]}' limit 1 ";
+		//echo $sql;
+		$row2 = db_query_fetch($sql);
+
+		?>
+
+                <tr class="odd gradeX">
+                  <td style="text-align:center;"><?=($page-1)*$list_num+$T?></td>
+                  <td style="text-align:center;"><?=f_hyunjang_name($row[h_idx])?></td>
+                  <td style="text-align:center;"><?=f_money0($ii[ss])?></td>
+                  <td style="text-align:center;"><?=f_money0($sj[ss])?></td>
+                  <td style="text-align:center;"><?=f_date($id[g1])?></td>
+                  <td style="text-align:center;"><?=$status?></td>
+                  <td style="text-align:center;width:150px;"><?=f_date($row2[regist_date])?></td>
+                  <td style="text-align:center;"><span id="mm"><button type="button" class="btn btn-success" onclick="javascript:f_jungsan(<?=$row[h_idx]?>);"  style="background-color:#F29661;" id="jj_button">정산</button></span></td>
+                  <td style="text-align:center;">
+				  <button type="button" class="btn btn-success" onclick="javascript:f_excel(<?=$row[h_idx]?>);"  style="background-color:#F29661;">엑셀다운로드</button>
+				  </td>
+                </tr>
+
+	<?$T++;}
+}else{?>
+              <tr class="title">
+                <td colspan=9 align=center>내용이 없습니다.</td>
+              </tr>
+<?}?>
+
+
+              </tbody>
+            </table>
+
+
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--bottom-시작-->
+	<?include ("../../include/bottom.php");?>
+<!--bottom-종료-->
+
+
+<script src="/js/common.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+<script>
+
+function f_jungsan(h_idx){
+	if(confirm("정산 진행하시겠습니까?")){
+			$("#jj_button").hide();
+			$("#mm").html("<font color='blue'>처리중..</font>");
+			$.ajax({
+				type:"GET",
+				url:'./process_jungsan.php',
+				dataType:"text",
+				data:{h_idx:h_idx},
+				timeout : 30000,
+				success:function (req) {
+					if(req=="OK"){
+						alert("정산 처리가 완료되었습니다. ");
+						$("#jj_button").show();
+						location.reload();
+					}
+				},
+				error : function(request, status, error) {
+					//통신 에러 발생시 처리
+					//alert("code : " + request.status + "\r\nmessage : " + request.reponseText);
+				}
+			});
+	}
+}
+
+function f_excel(h_idx){
+		location.href = "excel_down.php?h_idx="+h_idx;
+}
+
+function f_submit(){
+	document.ffx.action = "index.html";
+	document.ffx.submit();
+}
+
+</script>
+
+</body>
+</html>

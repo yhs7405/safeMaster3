@@ -1,0 +1,121 @@
+<?	include ("../include/dbconn.php");
+	include ("../include/login_ch.php");
+	include ("../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$chx	=	$_REQUEST[ch];
+	$chxm	=	implode( ',', $chx);
+?>
+
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+<title>재무돌이</title>
+<?include ("../include/common.php");?>
+</head>
+
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+
+<script>
+
+$(function() {
+		$( ".datepickx" ).datepicker({
+			autosize: true,
+			showOn: "button",
+			buttonImage: "/images/calendar.gif",
+			buttonImageOnly: true,
+			changeMonth: true,
+			changeYear: true,
+			dateFormat: "yymmdd",
+			dayNamesShort:["일","월","화","수","목","금","토"],
+			monthNamesShort:["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"]
+		});
+	 $("img.ui-datepicker-trigger").attr("style", "margin-bottom:4px; vertical-align:middle; cursor: Pointer;");
+});
+$( ".datepickx" ).datepicker( "option", "dayNamesShort",  [ "Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam" ] );
+</script>
+
+<body>
+
+<!--header 시작-->
+	<?include ("../../include/header.php");?>
+<!--header 종료-->
+
+
+<!--top-메뉴시작-->
+	<?include ("../../include/header_menu.php");?>
+<!--top-메뉴종료-->
+
+
+<div id="content">
+
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+
+			<br><br><br><br><br>
+			<div  style="width:100%;height:300px;">
+				<form name=ffx id=ffx method=post>
+				<input type=hidden name="ch" value="<?=$chxm?>">
+
+				<table class="table table-bordered table-striped top_box">
+				  <thead>
+					<tr >
+					  <th id='a1' style='display:block;'>
+						&nbsp;선택항목에 세금계산서 발행일을 입력하시겠습니까?
+					  </th>
+					</tr>
+					<tr>
+					  <th id='a2' style='display:block;text-align:center;'>
+						&nbsp;세금계산서발행일 <input type=text name="apply_date" id="apply_date" value="<?=date("Ymd")?>"  class="datepickx" size=8 maxlength=8 style="width:70px;height:15px;">
+					  </th>
+					</tr>
+					<tr>
+						<th id='a3' style='display:block;text-align:center;'>
+							<button type="button" class="btn btn-success" onclick="javascript:f_apply();"  style="background-color:#F29661;">발행</button>&nbsp;&nbsp;&nbsp;&nbsp;
+							<button type="button" class="btn btn-success" onclick="javascript:opener.document.ffx.submit();;window.close();"  style="background-color:#F29661;">닫기</button>
+						</th>
+					</tr>
+					<tr>
+					  <th id='b1' style='display:none;text-align:center;'>
+							<input type=button value=' 처리 완료 ' onclick='javascript:opener.document.ffx.submit();;window.close();'>
+					  </th>
+					</tr>
+				  </thead>
+				</table>
+				</form>
+			</div>
+
+    </div>
+  </div>
+</div>
+
+<script src="/js/common.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+<script>
+function f_apply(){
+	var ff = document.ffx;
+	if(ff.ch.value==""){
+		alert("선택이 제대로 되지 않았습니다.확인하세요.");
+	}else{
+		document.getElementById('a1').style.display = "none";
+		document.getElementById('a2').style.display = "none";
+		document.getElementById('a3').style.display = "none";
+		document.getElementById('b1').style.display = "block";
+		ff.action  ="segum_date_select_ok.htm";
+		ff.submit();
+	}
+}
+</script>
+
+
+</body>
+</html>

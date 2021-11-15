@@ -1,0 +1,648 @@
+<?	include ("../../include/dbconn.php");
+	include ("../../include/login_ch.php");
+	include ("../../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_junib";
+
+	$h_idx				=	trim($_REQUEST[h_idx]);
+	$target_date		=	trim($_REQUEST[target_date]);
+	$s_date				=	trim($_REQUEST[s_date]);
+	$e_date				=	trim($_REQUEST[e_date]);
+
+	$target_date2		=	trim($_REQUEST[target_date2]);
+	$s_date2			=	trim($_REQUEST[s_date2]);
+	$e_date2			=	trim($_REQUEST[e_date2]);
+
+	$target_gubun			=	trim($_REQUEST[target_gubun]);
+
+
+	$h1					=	trim($_REQUEST[h1]);
+	$i1					=	trim($_REQUEST[i1]);
+	$j1					=	trim($_REQUEST[j1]);
+	$memo				=	trim($_REQUEST[memo]);
+	$kikan1_null_ch		=	trim($_REQUEST[kikan1_null_ch]);
+	$kikan2_null_ch		=	trim($_REQUEST[kikan2_null_ch]);
+	$not_data_ch			=	trim($_REQUEST[not_data_ch]);
+
+	if($target_date=="") $target_date="doc_receive_date";
+	if($s_date=="")		$s_date=date("Ymd");
+	if($e_date=="")		$e_date=date("Ymd");
+
+	$view_num		=	trim($_REQUEST[view_num]);	//한라인에 몇개를 출력할건지//
+	if($_REQUEST[page]==""){$page=1;}else{$page=$_REQUEST[page];}
+	$Page_List		=	10;							//링크페이지를 몇개씩 보여줄건지.. 1 / 2 / 3
+	if(!$view_num)	$view_num=	100;					//리스트 갯수
+
+
+	$wherequery = " where 1=1  ";
+
+	if($h_idx!=""){
+		$wherequery.= " and h_idx = ".$h_idx." ";
+	}	else {
+		$wherequery.= " and h_idx = ' '";
+	}
+
+	if($h1!="")				$wherequery.= " and h1 = '".$h1."' ";
+	if($i1!="")				$wherequery.= " and i1 = '".$i1."' ";
+	if($j1!="")				$wherequery.= " and (j1 like '%{$j1}%' or m1 like '%{$j1}%')";
+	
+	if($kikan1_null_ch=="Y"){
+		if($target_date!="") {$imsi = " and ({$target_date}='' or {$target_date} is null )";}
+		$wherequery.=$imsi;
+	}else{
+		if($target_date!=""){
+			if(($s_date!="")&&($e_date!="")){
+				$imsi = "";
+				if($target_date!="") {$imsi = " and {$target_date} between ";}
+				if($s_date==$e_date) {$imsi.= " {$s_date} and {$e_date} ";}
+				if($s_date!=$e_date) {$imsi.= " {$s_date} and {$e_date} ";}
+				$wherequery.=$imsi;
+			}
+		}
+	}
+	
+	if($kikan2_null_ch=="Y"){
+		if($target_date2!="") {$imsi = " and ({$target_date2}='' or {$target_date2} is null )";}
+		$wherequery.=$imsi;
+	}else{
+		if($target_date2!=""){
+			if(($s_date2!="")&&($e_date2!="")){
+				$imsi = "";
+				if($target_date2!="") {$imsi = " and {$target_date2} between ";}
+				if($s_date2==$e_date2) {$imsi.= " {$s_date2} and {$e_date2} ";}
+				if($s_date2!=$e_date2) {$imsi.= " {$s_date2} and {$e_date2} ";}
+				$wherequery.=$imsi;
+			}
+		}
+	}
+  // ae1(정산비고)
+	if($memo!=""){
+		$wherequery.= " and ae1 like '%{$memo}%' ";
+	}
+  // 미입력데이터만 보기
+	if($not_data_ch=="Y"){
+		$wherequery.= " and ( ao1 = '' or ao1_toji = '' or an1 = '' or am1_rpur_cost = '') ";
+	}
+
+
+	//echo $wherequery;
+	$rows_total = db_count_all($board_dbname,$wherequery);
+
+	//현장정보 반환
+	$sql2 = "select * from tbl_hyunjang_info where h_idx='{$h_idx}' limit 1 ";
+	$kk = db_query_value($sql2);
+
+
+?>
+
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+<title>CS돌이</title>
+<?include ("../../include/common.php");?>
+</head>
+
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+
+<script>
+
+$(function() {
+		$( ".datepickx" ).datepicker({
+			autosize: true,
+			showOn: "button",
+			buttonImage: "/images/calendar.gif",
+			buttonImageOnly: true,
+			changeMonth: true,
+			changeYear: true,
+			dateFormat: "yymmdd",
+			dayNamesShort:["일","월","화","수","목","금","토"],
+			monthNamesShort:["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"]
+		});
+	 $("img.ui-datepicker-trigger").attr("style", "margin-bottom:4px; vertical-align:middle; cursor: Pointer;");
+});
+$( ".datepickx" ).datepicker( "option", "dayNamesShort",  [ "Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam" ] );
+
+
+
+
+
+
+</script>
+
+
+<body style="overflow:auto; width:1880px;">
+
+<!--header 시작-->
+	<?include ("../../include/header.php");?>
+<!--header 종료-->
+
+
+<!--top-메뉴시작-->
+	<?include ("../../include/header_menu.php");?>
+<!--top-메뉴종료-->
+
+
+<div id="content">
+
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" title="Go to Home" class="tip-bottom">공과금산정납부</a> <a href="#" class="current">기타공과금산정</a> </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+
+			<form name=ffx  method=post>
+			<div  style="width:100%;background-color:#EFEFEF;border-top:1px solid #e7e7e7;border-left:1px solid #e7e7e7;border-right:1px solid #e7e7e7;">
+				<input type=hidden name="view_num"  id="view_num"  value="<?=$view_num?>">
+				<input type=hidden name="page"  id="page"  value="<?=$page?>">
+				
+				<table style="background-color:#EFEFEF;">
+				  <thead>
+					<tr>
+					  <th style="text-align:left;margin-top:10px;">
+						<div style="margin-left:592px;margin-bottom:5px;margin-top:5px;">
+						<button type="button" class="btn btn-success" onclick="javascript:f_date0();"  style="background-color:#F29661;font-size:8pt;height:26px;">당일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date1();"  style="background-color:#F29661;font-size:8pt;height:26px;">3일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date2();"  style="background-color:#F29661;font-size:8pt;height:26px;">1주일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date3();"  style="background-color:#F29661;font-size:8pt;height:26px;">2주일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date4();"  style="background-color:#F29661;font-size:8pt;height:26px;">1개월</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date5();"  style="background-color:#F29661;font-size:8pt;height:26px;">3개월</button>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						&nbsp;&nbsp;&nbsp;&nbsp;
+						<button type="button" class="btn btn-success" onclick="javascript:f_date20();"  style="background-color:#F29661;font-size:8pt;height:26px;">당일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date21();"  style="background-color:#F29661;font-size:8pt;height:26px;">3일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date22();"  style="background-color:#F29661;font-size:8pt;height:26px;">1주일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date23();"  style="background-color:#F29661;font-size:8pt;height:26px;">2주일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date24();"  style="background-color:#F29661;font-size:8pt;height:26px;">1개월</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date25();"  style="background-color:#F29661;font-size:8pt;height:26px;">3개월</button>
+						</div>
+						  &nbsp;&nbsp;&nbsp;&nbsp;현 장 명&nbsp;&nbsp;&nbsp;<?=f_hyunjang_select("h_idx",$h_idx," style='width:315px;'")?>&nbsp;&nbsp;
+
+						  &nbsp;&nbsp;&nbsp;기 간&nbsp;&nbsp;&nbsp;<select name=target_date style="width:200px;">
+						  <option value="al1_acp_date" <?if($target_date=="al1_acp_date"){?>selected<?}?>>취득세신고일</option>
+						  <option value="am1_pur_date" <?if($target_date=="am1_pur_date"){?>selected<?}?>>인지구매일</option>
+						  <option value="am1_relay_date" <?if($target_date=="am1_relay_date"){?>selected<?}?>>인지전달일</option>
+						  <option value="pred_g1" <?if($target_date=="pred_g1"){?>selected<?}?>>(예상)등기접수일</option>
+						  <option value="g1" <?if($target_date=="g1"){?>selected<?}?>>등기접수일</option>
+						  </select>&nbsp;                                                                               
+						    <input type="checkbox" id="kikan1_null_ch" name="kikan1_null_ch" <?if($kikan1_null_ch=="Y"){?>checked<?}?> value="Y">
+						  <input type=text name="s_date" id="s_date" value="<?=$s_date?>"  class="datepickx" size=8 maxlength=8 style="width:80px;height:20px;">~<input type=text name="e_date" id="e_date" value="<?=$e_date?>"  class="datepickx" size=8 maxlength=8 style="width:80px;height:20px;">
+
+						  &nbsp;&nbsp;&nbsp;기 간 2&nbsp;&nbsp;&nbsp;<select name=target_date2 style="width:200px;">
+						  <option value="">-선택-</option>
+						  <option value="al1_acp_date" <?if($target_date2=="al1_acp_date"){?>selected<?}?>>취득세신고일</option>
+						  <option value="am1_pur_date" <?if($target_date2=="am1_pur_date"){?>selected<?}?>>인지구매일</option>
+						  <option value="am1_relay_date" <?if($target_date2=="am1_relay_date"){?>selected<?}?>>인지전달일</option>
+						  <option value="pred_g1" <?if($target_date2=="pred_g1"){?>selected<?}?>>(예상)등기접수일</option>
+						  <option value="g1" <?if($target_date2=="g1"){?>selected<?}?>>등기접수일</option>
+						  </select>&nbsp;
+						    <input type="checkbox" id="kikan2_null_ch" name="kikan2_null_ch" <?if($kikan2_null_ch=="Y"){?>checked<?}?> value="Y">
+						  <input type=text name="s_date2" id="s_date2" value="<?=$s_date2?>"  class="datepickx" size=8 maxlength=8 style="width:80px;height:20px;">~<input type=text name="e_date2" id="e_date2" value="<?=$e_date2?>"  class="datepickx" size=8 maxlength=8 style="width:80px;height:20px;">
+
+						  <Br>
+						  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;동&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type=text name="h1" value="<?=$h1?>" style="width:80px;">
+						  &nbsp;&nbsp;&nbsp;호&nbsp;&nbsp;&nbsp;<input type=text name="i1" value="<?=$i1?>" style="width:80px;">
+						  &nbsp;&nbsp;&nbsp;취득자&nbsp;&nbsp;&nbsp;<input type=text name="j1" value="<?=$j1?>" style="width:147px;">
+						  &nbsp;&nbsp;&nbsp;&nbsp;정산비고&nbsp;&nbsp;&nbsp;&nbsp;<input type=text name="memo" value="<?=$memo?>" style="width:430px;">
+						  &nbsp;&nbsp;&nbsp;미입력데이터만 보기&nbsp;&nbsp;&nbsp;<input type="checkbox" id="not_data_ch" name="not_data_ch" <?if($not_data_ch=="Y"){?>checked<?}?> value="Y">
+					  </th>
+					  <th>
+						&nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-success" onclick="javascript:f_submitx();" style="background-color:#4374D9;height:60px;width:60px;margin-top:25px;">조회</button>
+					  </th>
+					</tr>
+				  </thead>
+				</table>
+			</div>
+			<table class="table table-bordered table-striped top_box" style="border-right:1px solid #e7e7e7;">
+			  <thead>
+				<tr style="height:40px;vertical-align: middle;">
+				  <th style="text-align:left;border-right:0px;width:51%;"><b style="color:black;font-weight:bold;"><?if($h_idx!=""){?>현장명: <?=f_hyunjang_name($h_idx)?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?}?>
+				  <?if(($target_date!="")&&($s_date!="")&&($e_date!="")){?><?=f_cate2($target_date)?>: <?=f_date($s_date)?>~ <?=f_date($e_date)?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?}?>
+				  <?if(($target_date2!="")&&($s_date2!="")&&($e_date2!="")){?><?=f_cate2($target_date2)?>: <?=f_date($s_date2)?>~ <?=f_date($e_date2)?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?}?>
+				  총 <?=f_money0($rows_total)?>건</b>
+				  </th>
+				  <th style="text-align:right;border-left:0px;">
+					<button type="button" class="btn btn-success" onclick="javascript:f_excel();"  style="background-color:#F29661;">엑셀다운로드</button>&nbsp;&nbsp;
+				  </th>
+				</tr>
+			  </thead>
+			</table>
+			<table class="table table-bordered table-striped top_box" style="border-right:1px solid #e7e7e7;">
+			  <thead>
+				<tr style="height:45px;width:30%;vertical-align: middle;">
+				  <th style="text-align:left;border-left:0px;" >
+						<b style="color:red;font-weight:bold;bold;font-size:12pt;">&nbsp;&nbsp;&nbsp;※ 이 페이지에서 공과금산정 후 저장하게 되면, 정산데이터로 사용이 됩니다.</b>
+						<br>
+						<b style="color:blue;font-weight:bold;bold;font-size:12pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;아래 항목들은 비용안내데이터와는 연동이 되지 않으니 주의하시기 바랍니다.&nbsp;&nbsp;&nbsp;</b>
+				  </th>
+				  <th style="text-align:right;border-left:0px;" >
+					<button type="button" class="btn btn-success" onclick="javascript:f_chogi();"  style="background-color:#F29661;">초기화</button>&nbsp;&nbsp;&nbsp;&nbsp;
+					적용날짜 <input type=text name="apply_date" id="apply_date" value="<?=date("Ymd")?>"  class="datepickx" size=8 maxlength=8 style="width:70px;height:15px;">
+					<button type="button" class="btn btn-success" onclick="javascript:apply();" style="background-color:#F29661;">적용</button><br>
+			  	</th>
+				</tr>
+			  </thead>
+			</table>
+			</form>
+		</div>
+
+
+	<form name=ffm method="post">
+		<input type=hidden name="list_num"  value="<?=$view_num?>">
+
+        <div class="widget-box">
+          <div class="widget-content nopadding">
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th style="font-size:8pt;">No</th>
+                  <th style="font-size:8pt;">동</th>
+                  <th style="font-size:8pt;">호</th>
+                  <th style="font-size:8pt;">취득자</th>
+                  <th style="font-size:8pt;">취득세신고일</th>
+                  <th style="font-size:8pt;">(예상)등기<br>접수일</th>
+                  <th style="font-size:8pt;">등기<br>접수일</th>
+                  <th style="font-size:8pt;">전매여부</th>
+                  <th style="font-size:8pt;">인지산정과표</th>
+                  <th style="font-size:8pt;">취득과세표</th>
+                  <th style="font-size:8pt;">인지매입액</th>
+                  <th style="font-size:8pt;">신탁여부</th>
+
+                  <th style="font-size:8pt;width:105px;"><input type=text name="apply_ao1" id="apply_ao1" style="width:80px;height:15px;font-size:8pt;text-align:right;" onkeyup="onlyNum(this);this.value=this.value.comma();"><br><button type="button" class="btn btn-success" onclick="javascript:apply_ao1_set();" style="background-color:#F29661;">적용</button><br>&nbsp;&nbsp;&nbsp;&nbsp;신탁말소<br><input type="checkbox" id="ao1_ch" name="ao1_ch"> (건물)등록세</th>
+                  <th style="font-size:8pt;width:105px;"><input type=text name="apply_ao1_toji" id="apply_ao1_toji" style="width:80px;height:15px;font-size:8pt;text-align:right;" onkeyup="onlyNum(this);this.value=this.value.comma();"><br><button type="button" class="btn btn-success" onclick="javascript:apply_ao1_toji_set();" style="background-color:#F29661;">적용</button><br>&nbsp;&nbsp;&nbsp;&nbsp;신탁변경<br><input type="checkbox" id="ao1_toji_ch" name="ao1_toji_ch"> (토지)등록세</th>
+                  <th style="font-size:8pt;width:105px;"><input type=text name="apply_an1" id="apply_an1" value="13,000" style="width:80px;height:15px;font-size:8pt;text-align:right;" onkeyup="onlyNum(this);this.value=this.value.comma();"><br><button type="button" class="btn btn-success" onclick="javascript:apply_an1_set();" style="background-color:#F29661;">적용</button><br><br><input type="checkbox" id="an1_ch" name="an1_ch"> 증지</th>
+                  <th style="font-size:8pt;">본인인지</th>
+                  <th style="font-size:8pt;">본인인지금액</th>
+                  <th style="font-size:8pt;width:105px;background-color:skyblue;"><br><button type="button" class="btn btn-success" onclick="javascript:am1_rpur_cost_set();" style="background-color:#F29661;">적용</button><br><br><input type="checkbox" id="am1_rpur_cost_ch" name="am1_rpur_cost_ch"> (실)인지매입</th>
+                  <th style="font-size:8pt;width:105px;"><input type="checkbox" id="am1_pur_date_ch" name="am1_pur_date_ch"> 인지구매</th>
+                  <th style="font-size:8pt;width:105px;"><input type="checkbox" id="am1_relay_date_ch" name="am1_relay_date_ch"> 인지전달</th>
+                  <th style="font-size:8pt;">정산비고</th>
+                </tr>
+
+              </thead>
+              <tbody>
+
+	<?
+	$Link_Value = "?list_num={$view_num}&s_gubun=$s_gubun&s_search=$s_search";
+	$Page_link = _Make_Link($rows_total,$view_num,$Page_List,$page,$Link_Value,$img_pp,$img_p,$img_nn,$img_n);
+
+	$sql = "select *, if(m1='',j1,CONCAT(j1, ',', m1)) as jm1 , case when u1='1' then CONCAT('(2차)',u1_1) when u1='2' then CONCAT('(2차)',u1_1, '-', u1_2) when u1='3' then CONCAT('(3차)',u1_1, '-', u1_2, '-', u1_3) when u1='4' then CONCAT('(4차)',u1_1, '-', u1_2, '-', u1_3, '-', u1_4) when u1='5' then CONCAT('(5차)',u1_1, '-', u1_2, '-', u1_3, '-', u1_4, '-', u1_5) when u1='6' then CONCAT('(6차)',u1_1, '-', u1_2, '-', u1_3, '-', u1_4, '-', u1_5, '-', u1_6) else '' end as u1_list from $board_dbname  $wherequery order by  cast(a1 as unsigned) asc limit $Page_link[start],$view_num";
+//	$sql = "select * from $board_dbname  $wherequery order by  cast(h1 as unsigned) asc,cast(i1 as unsigned) asc limit $Page_link[start],$view_num";
+//	echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	if($rows > 0){
+		$T=1;$i=1;
+			while($row = $stmt->fetch()){?>
+
+
+				<input type=hidden name="idx_<?=$i?>" value="<?=$row[idx]?>">
+				<input type=hidden name="a1_<?=$i?>" value="<?=$row[a1]?>">
+				<input type=hidden name="u1_list_<?=$i?>" value="<?=$row[u1_list]?>">
+				<input type=hidden name="trust_gubun_<?=$i?>" value="<?=$kk[trust_gubun]?>">
+				<input type=hidden name="lot_amount_<?=$i?>" value="<?=f_lot_amount_value($row[h_idx],$row[b1])?>">
+				<input type=hidden name="am1_pur_cost_<?=$i?>" value="<?=f_money($row[am1_pur_cost])?>">
+
+
+                <tr class="odd gradeX">
+                	<td style="text-align:center;font-size:8pt;"><?=($page-1)*$view_num+$T?></td>
+                	<td style="text-align:center;font-size:8pt;"><?=$row[h1]?></td>
+                	<td style="text-align:center;font-size:8pt;"><?=$row[i1]?></td>
+                	<td style="text-align:center;font-size:8pt;"><a href="javascript:f_popup_s('<?=$row[a1]?>');"  style="text-decoration:underline;color:red;"><?=$row[jm1]?></td>
+                  <td style="text-align:center;font-size:8pt;"><?=f_date2($row[al1_acp_date])?></td>
+                  <td style="text-align:center;font-size:8pt;"><?=f_date2($row[pred_g1])?></td>
+                  <td style="text-align:center;font-size:8pt;"><?=f_date2($row[g1])?></td>
+                  <td style="text-align:center;font-size:8pt;"><?=$row[u1_list]?></td>
+                  <td style="text-align:center;font-size:8pt;"><?=f_money($row[am1_table])?></td>
+                  <td style="text-align:center;font-size:8pt;"><?=f_money($row[af1])?></td>
+                  <td style="text-align:center;font-size:8pt;"><?=f_money($row[am1_pur_cost])?></td>
+                  <td style="text-align:center;font-size:8pt;"><?=f_turst_gubun0_value($kk[trust_gubun])?></td>
+                  <td style="text-align:center;font-size:8pt;"><input type="checkbox" name="ao11_<?=$i?>" class="ao1" value="y">&nbsp;<input type=text class="ao1_xx"  name="ao1_<?=$i?>" value="<?=f_money($row[ao1])?>" style="width:70px;height:15px;font-size:8pt;text-align:right;" onkeydown="nextFocus(gsil_last_date1_<?=$i+1?>)" onkeyup="onlyNum(this);this.value=this.value.comma();"   onfocus='javascript:focusFunction(this);'></td>
+                  <td style="text-align:center;font-size:8pt;"><input type="checkbox" name="ao1_toji1_<?=$i?>" class="ao1_toji" value="y">&nbsp;<input type=text class="ao1_toji_xx"  name="ao1_toji_<?=$i?>" value="<?=f_money($row[ao1_toji])?>" style="width:70px;height:15px;font-size:8pt;text-align:right;" onkeydown="nextFocus(gsil_last_date1_<?=$i+1?>)" onkeyup="onlyNum(this);this.value=this.value.comma();"   onfocus='javascript:focusFunction(this);'></td>
+                  <td style="text-align:center;font-size:8pt;"><input type="checkbox" name="an11_<?=$i?>" class="an1" value="y">&nbsp;<input type=text class="an1_xx"  name="an1_<?=$i?>" value="<?=f_money($row[an1])?>" style="width:70px;height:15px;font-size:8pt;text-align:right;" onkeydown="nextFocus(gsil_last_date1_<?=$i+1?>)" onkeyup="onlyNum(this);this.value=this.value.comma();"   onfocus='javascript:focusFunction(this);'></td>
+                  <td style="text-align:center;font-size:8pt;"><input type="checkbox" name="am1_me_yn_<?=$i?>" class="am1_me_yn" value="y" <?if($row[am1_me_yn]=="y"){?>checked<?}?>></td>
+                  <td style="text-align:center;font-size:8pt;"><input type=text class="am1_me_cost_xx"  name="am1_me_cost_<?=$i?>" value="<?=f_money($row[am1_me_cost])?>" style="width:70px;height:15px;font-size:8pt;text-align:right;" onkeydown="nextFocus(gsil_last_date1_<?=$i+1?>)" onkeyup="onlyNum(this);this.value=this.value.comma();"></td>
+                  <td style="text-align:center;font-size:8pt;background-color:skyblue;"><input type="checkbox" name="am1_rpur_cost1_<?=$i?>" class="am1_rpur_cost" value="y">&nbsp;<input type=text class="am1_rpur_cost_xx"  name="am1_rpur_cost_<?=$i?>" value="<?=f_money($row[am1_rpur_cost])?>" style="width:70px;height:15px;font-size:8pt;text-align:right;" onkeydown="nextFocus(gsil_last_date1_<?=$i+1?>)" onkeyup="onlyNum(this);this.value=this.value.comma();"></td>
+                  <td style="text-align:center;font-size:8pt;"><input type="checkbox" name="am1_pur_date1_<?=$i?>" class="am1_pur_date" value="y">&nbsp;<input type=text class="am1_pur_date_xx datepickx" name="am1_pur_date_<?=$i?>" value="<?=$row[am1_pur_date]?>"  size=8 maxlength=8 style="width:48px;height:15px;font-size:8pt;"  onfocus='javascript:focusFunction(this);'></td>
+                  <td style="text-align:center;font-size:8pt;"><input type="checkbox" name="am1_relay_date1_<?=$i?>" class="am1_relay_date" value="y">&nbsp;<input type=text class="am1_relay_date_xx datepickx" name="am1_relay_date_<?=$i?>" value="<?=$row[am1_relay_date]?>"  size=8 maxlength=8 style="width:48px;height:15px;font-size:8pt;"  onfocus='javascript:focusFunction(this);'></td>
+									<td style="text-align:center;font-size:8pt;"><textarea style="width:70px;font-size:8pt;" name="ae1_<?=$i?>"  cols=50 rows=1><?=$row[ae1]?></textarea></td>
+
+                </tr>
+
+
+	<?$T++;$i++;}
+}else{?>
+              <tr class="title">
+                <td colspan=21 align=center>내용이 없습니다.</td>
+              </tr>
+<?}?>
+
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+		<div class="fg-toolbar ui-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix" style="height:30px;">
+			<div class="dataTables_filter" id="DataTables_Table_0_filter"><label  style="float:left;">페이지당 </label>&nbsp;<select name="view_num" style="width:80px;" onchange="javascript:f_movex(this);">
+					<option selected="selected" value="10" <?if($view_num==10){?>selected<?}?>>10</option>
+					<option value="15" <?if($view_num==15){?>selected<?}?>>15</option>
+					<option value="20" <?if($view_num==20){?>selected<?}?>>20</option>
+					<option value="30" <?if($view_num==30){?>selected<?}?>>30</option>
+					<option value="30" <?if($view_num==50){?>selected<?}?>>50</option>
+					<option value="100" <?if($view_num==100){?>selected<?}?>>100</option>
+					<option value="200" <?if($view_num==200){?>selected<?}?>>200</option>
+					<option value="300" <?if($view_num==300){?>selected<?}?>>300</option>
+				</select>
+			</div>
+			<?include $_SERVER["DOCUMENT_ROOT"]."/include/paging.php";?>
+
+<?if($_SESSION["admin_permission"][ch_e32]=="y"){?>
+		<?	if($rows > 0){  ?>
+				<div style="float:right;margin-top:-25px;margin-bottom:10px;margin-right:10px;">
+					<button type="button" class="btn btn-success" onclick="javascript:f_submit();">저장</button>
+				</div>
+		<?	} else {  ?>
+				<div style="float:right;margin-top:0px;margin-bottom:10px;margin-right:10px;">
+					<button type="button" class="btn btn-success" onclick="javascript:f_submit();">저장</button>
+				</div>
+		<?	}  ?>
+<?}?>
+		</div>
+
+		</form>
+
+    </div>
+  </div>
+</div>
+
+<!--bottom-시작-->
+	<?include ("../../include/bottom.php");?>
+<!--bottom-종료-->
+
+<script src="/js/common.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+<script>
+
+function f_popup_s(a1){//설정상세조회
+	var url    ="/01_fdata/1_finput/regist.php?a1="+encodeURI(a1);
+	var title  = "listpops";
+	var status = "toolbar=no,directories=no,scrollbars=yes,resizable=no,status=no,menubar=no,width=1890, height=950, top=0,left=20"; 
+	var a = window.open(url, title,status);
+	a.focus();
+}
+
+function f_popup_g(a1){//기본상세조회
+	var url    ="/2_custom/1_search/popup_g.php?a1="+encodeURI(a1);
+	var title  = "listpops";
+	var status = "toolbar=no,directories=no,scrollbars=yes,resizable=no,status=no,menubar=no,width=1400, height=840, top=0,left=20"; 
+	var a = window.open(url, title,status);
+	a.focus();
+}
+
+function f_chogi(){  //초기화
+	if(confirm("초기화 하시겠습니까?")){
+
+			$("#an1_ch").prop("checked", false);
+			$("#ao1_ch").prop("checked", false);
+			$("#ao1_toji_ch").prop("checked", false);
+			$("#am1_pur_date_ch").prop("checked", false);
+			$("#am1_relay_date_ch").prop("checked", false);
+			$("#am1_rpur_cost_ch").prop("checked", false);
+
+			$(".an1").prop("checked", false);
+			$(".ao1").prop("checked", false);
+			$(".ao1_toji").prop("checked", false);
+			$(".am1_pur_date").prop("checked", false);
+			$(".am1_relay_date").prop("checked", false);
+			$(".am1_rpur_cost").prop("checked", false);
+
+			$(".an1_xx").val("");
+			$(".ao1_xx").val("");
+			$(".ao1_toji_xx").val("");
+			$(".am1_pur_date_xx").val("");
+			$(".am1_relay_date_xx").val("");
+			$(".am1_rpur_cost_xx").val("");
+			
+	}
+}
+
+
+function apply(){  //적용
+			//alert($("#apply_date").val());
+	for(i=1;i<=<?=$view_num?>;i++){
+		if($("#apply_date").val()!=""){  //날짜일때
+			if($("input:checkbox[name='am1_pur_date1_"+i+"']").is(":checked")==true){
+				$("input:text[name='am1_pur_date_"+i+"']").val($("#apply_date").val());
+			}
+			if($("input:checkbox[name='am1_relay_date1_"+i+"']").is(":checked")==true){
+				$("input:text[name='am1_relay_date_"+i+"']").val($("#apply_date").val());
+			}
+
+		}
+
+	}
+
+}
+
+
+function apply_ao1_set(){  //신탁말소(건물)등록세 적용
+			//alert($("#apply_date").val());
+	if($("#apply_ao1").val()!=""){  //날짜일때
+		for(i=1;i<=<?=$view_num?>;i++){
+			if($("#apply_ao1").val()!=""){  //날짜일때
+				//alert($("#apply_date").val());
+				if($("input:checkbox[name='ao11_"+i+"']").is(":checked")==true){
+					if($("input:hidden[name='trust_gubun_"+i+"']").val()!="2"){
+						$("input:text[name='ao1_"+i+"']").val("0");
+					} else {
+						$("input:text[name='ao1_"+i+"']").val($("#apply_ao1").val());
+					}
+				}
+			}
+		}
+	} else {
+			alert("신탁말소(건물)등록세 적용 값을 입력하세요.");
+	}
+}
+
+
+function apply_ao1_toji_set(){  //신탁말소(토지)등록세 적용
+			//alert($("#apply_date").val());
+	if($("#apply_ao1_toji").val()!=""){  //날짜일때
+		for(i=1;i<=<?=$view_num?>;i++){
+			if($("#apply_ao1_toji").val()!=""){  //날짜일때
+				//alert($("#apply_date").val());
+				if($("input:checkbox[name='ao1_toji1_"+i+"']").is(":checked")==true){
+					if($("input:hidden[name='trust_gubun_"+i+"']").val()!="2"){
+						$("input:text[name='ao1_toji_"+i+"']").val("0");
+					} else {
+						a = $("input:hidden[name='lot_amount_"+i+"']").val();
+						b = de_comma($("#apply_ao1_toji").val());
+						c = a * b ;
+						$("input:text[name='ao1_toji_"+i+"']").val(commax(c));
+						//alert(a);
+					}
+				}
+			}
+		}
+	} else {
+	alert("신탁말소(토지)등록세 적용 값을 입력하세요.");
+	}
+}
+
+function apply_an1_set(){  //증지 적용
+			//alert($("#apply_date").val());
+	if($("#apply_an1").val()!=""){  //날짜일때
+		for(i=1;i<=<?=$view_num?>;i++){
+			if($("#apply_an1").val()!=""){  //날짜일때
+				//alert($("#apply_date").val());
+				if($("input:checkbox[name='an11_"+i+"']").is(":checked")==true){
+					$("input:text[name='an1_"+i+"']").val($("#apply_an1").val());
+				}
+			}
+		}
+	} else {
+			alert("증지 적용 값을 입력하세요.");
+	}
+}
+
+function am1_rpur_cost_set(){  //(실)인지매입  적용
+			//alert($("#apply_date").val());
+	for(i=1;i<=<?=$view_num?>;i++){
+			//alert($("input:checkbox[name='am1_me_yn_"+i+"']").val());
+		if($("input:checkbox[name='am1_rpur_cost1_"+i+"']").is(":checked")==true){
+			if($("input:checkbox[name='am1_me_yn_"+i+"']").is(":checked")!=true){
+				$("input:text[name='am1_rpur_cost_"+i+"']").val($("input:hidden[name='am1_pur_cost_"+i+"']").val());
+			//alert($("input:text[name='am1_rpur_cost_"+i+"']").val() + "/" + $("input:hidden[name='am1_pur_cost_"+i+"']").val());
+			} else {
+				$("input:text[name='am1_rpur_cost_"+i+"']").val($("input:text[name='am1_me_cost_"+i+"']").val());
+
+			}
+		}
+	}
+}
+
+$(document).ready(function(){
+	$("#an1_ch").click(function(e){ 
+		if($(this).is(":checked")){
+			//alert(1);
+			$(".an1").prop("checked", true);
+		}else{
+			//alert(0);
+			$(".an1").prop("checked", false);
+		}
+	});
+	$("#ao1_ch").click(function(e){ 
+		if($(this).is(":checked")){
+			//alert(1);
+			$(".ao1").prop("checked", true);
+		}else{
+			//alert(0);
+			$(".ao1").prop("checked", false);
+		}
+	});
+	$("#ao1_toji_ch").click(function(e){ 
+		if($(this).is(":checked")){
+			//alert(1);
+			$(".ao1_toji").prop("checked", true);
+		}else{
+			//alert(0);
+			$(".ao1_toji").prop("checked", false);
+		}
+	});
+
+	$("#am1_pur_date_ch").click(function(e){ 
+		if($(this).is(":checked")){
+			//alert(1);
+			$(".am1_pur_date").prop("checked", true);
+		}else{
+			//alert(0);
+			$(".am1_pur_date").prop("checked", false);
+		}
+	});
+	$("#am1_relay_date_ch").click(function(e){ 
+		if($(this).is(":checked")){
+			//alert(1);
+			$(".am1_relay_date").prop("checked", true);
+		}else{
+			//alert(0);
+			$(".am1_relay_date").prop("checked", false);
+		}
+	});
+	$("#am1_rpur_cost_ch").click(function(e){ 
+		if($(this).is(":checked")){
+			//alert(1);
+			$(".am1_rpur_cost").prop("checked", true);
+		}else{
+			//alert(0);
+			$(".am1_rpur_cost").prop("checked", false);
+		}
+	});
+
+
+});
+
+
+function f_excel(){  //엑셀다운
+	if(<?=$rows_total?>==0){
+		alert("총 0건 입니다.");
+	}else{
+		var frm    = document.ffx;
+		frm.action = "excel_down.php";
+		frm.method = "post";
+		frm.submit();
+		frm.action = "index.html";
+	}
+}
+
+function f_submitx(){
+	if(document.ffx.h_idx.value==""){
+		alert("현장은 필수항목입니다.");
+		$('#h_idx').focus();
+	}	else{
+		document.ffx.page.value=1;
+		document.ffx.target="_self";
+		document.ffx.action = "index.html";
+		document.ffx.submit();
+	}
+}
+
+function f_submit(){
+	var v = document.ffm;
+	if(confirm("저장하시겠습니까?")){
+		var frm    = document.ffm;
+		var url    = "post.php";
+		var title  = "listpop22";
+		var status = "toolbar=no,directories=no,scrollbars=no,resizable=no,status=no,menubar=no,width=100, height=100, top=400,left=800"; 
+		var aa2 = window.open("", title,status);
+		frm.target = title;
+		frm.action = url;
+		frm.method = "post";
+		frm.submit();
+		aa2.focus();
+	}
+}
+
+
+
+</script>
+
+</body>
+</html>

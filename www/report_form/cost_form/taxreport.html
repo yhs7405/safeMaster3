@@ -1,0 +1,2017 @@
+﻿<?	include ("../../include/dbconn.php");
+	include ("../../include/login_ch.php");
+	include ("../../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_junib";
+	$h1 = 0;
+
+	$report_f1	=	trim($_REQUEST[report_f1]);
+	$ch200	=	trim($_REQUEST[ch200]);
+	$chx	=	$_POST[ch];
+
+	$wherequery = " where 1=1 ";
+
+	$mm = array();
+	for($i=0;$i<count($chx);$i++){
+		$mm[$i] = "'$chx[$i]'";
+	}
+
+	$chxm = implode( ',', $mm);
+
+	$wherequery.= " and idx in ({$chxm}) "; 
+
+	//print_r($chx);
+	//echo "<br>{$wherequery}";
+
+
+	$yy = date("Y");
+	$mm = date("m");
+
+	$datex = date("YmdHis");
+	$sql = "update tbl_junib set ijun_update='{$datex}'  where idx in ({$chxm}) ";
+	//echo $sql;
+	db_query($sql);  //최신날짜 갱신
+	
+	//법무사정보 반환
+	$sql2 = "select * from tbl_user where id='{$report_f1}' limit 1 ";
+	$kk = db_query_value($sql2);
+
+
+?>
+
+<!DOCTYPE html>
+<html>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<meta name=ProgId content=Excel.Sheet>
+<meta name=Generator content="Microsoft Excel 15">
+<link rel="stylesheet" type="text/css" href="taxreport_style.css">
+<script src="/js/jquery.min.js"></script>
+
+</head>
+<body>
+
+<object id=factory style="display:none" 
+    classid="clsid:1663ed61-23eb-11d2-b92f-008048fdd814" 
+    codebase="/js/smsx.cab">
+</object> 
+
+
+<?
+
+	$sql = "select * from $board_dbname  $wherequery order by  cast(h1 as unsigned) asc,cast(i1 as unsigned) asc";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	while($row = $stmt->fetch()){
+
+
+	//현장상세정보 주소
+	$sql = "select * from tbl_hyunjang_danji_info  where h_idx='{$row[h_idx]}' and danji_name='{$row[b1]}' ";
+	//echo $sql."<br>";
+	$stmti = $pdo->prepare($sql);
+	$stmti->execute();
+	$rowi = $stmti->fetch();
+
+	?>
+	
+<?if($h1 != 0) { ?>
+	<p style="page-break-before: always;"></p>
+<?}
+	$h1 = $h1 + 1;
+?>
+
+	<div class="hpa" style="width: 210mm; height: 290mm;">
+		<div class="hcD" style="left: 20mm; top: 20mm;">
+			<div class="hcI">
+				<div class="hls ps5"
+					style="line-height: 265.08mm; white-space: nowrap; left: 0mm; top: 0mm; height: 265.08mm; width: 170mm;">
+					<div class="htb"
+						style="left: 0mm; width: 170.50mm; top: 1mm; height: 265.08mm; display: inline-block; position: relative; vertical-align: middle;">
+						<svg class="hs" viewBox="-2.50 -2.50 175.50 270.08"
+							style="left: -2.50mm; top: -2.50mm; width: 175.50mm; height: 270.08mm;">
+							<defs>
+							<pattern id="w_00" width="10" height="10"
+								patternUnits="userSpaceOnUse">
+							<rect width="10" height="10" fill="rgb(214,214,214)" /></pattern></defs>
+							<path fill="url(#w_00)"
+								d="M0,12.46L56.49,12.46L56.49,16.98L0,16.98L0,12.46Z "></path>
+							<path fill="url(#w_00)"
+								d="M56.49,12.46L129.62,12.46L129.62,16.98L56.49,16.98L56.49,12.46Z "></path>
+							<path fill="url(#w_00)"
+								d="M129.62,12.46L169.50,12.46L169.50,16.98L129.62,16.98L129.62,12.46Z "></path>
+							<path fill="url(#w_00)"
+								d="M145.20,157.92L169.50,157.92L169.50,170.49L145.20,170.49L145.20,157.92Z "></path>
+							<path fill="url(#w_00)"
+								d="M0,199.81L169.50,199.81L169.50,204.34L0,204.34L0,199.81Z "></path>
+							<path fill="url(#w_00)"
+								d="M0,250.49L43.37,250.49L43.37,254.80L0,254.80L0,250.49Z "></path>
+							<path fill="url(#w_00)"
+								d="M43.37,250.49L84.75,250.49L84.75,254.80L43.37,254.80L43.37,250.49Z "></path>
+							<path fill="url(#w_00)"
+								d="M84.75,250.49L127.13,250.49L127.13,254.80L84.75,254.80L84.75,250.49Z "></path>
+							<path fill="url(#w_00)"
+								d="M127.13,250.49L169.50,250.49L169.50,254.80L127.13,254.80L127.13,250.49Z "></path>
+							<path fill="url(#w_00)"
+								d="M127.10,254.80L169.50,254.80L169.50,259.12L127.10,259.12L127.10,254.80Z "></path>
+							<path fill="url(#w_00)"
+								d="M127.10,259.12L169.50,259.12L169.50,263.09L127.10,263.09L127.10,259.12Z "></path>
+							<path d="M7.20,17.98 L7.20,65.72"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M11.20,119.25 L11.20,145.29"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M15.19,186.39 L15.19,197.62"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M24.19,215.38 L24.19,236.60"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M25.17,75.11 L25.17,98.71"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M29.90,17.98 L29.90,65.72"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M29.90,65.72 L29.90,70.24"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M29.90,131.95 L29.90,145.29"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M43.37,81.01 L43.37,98.71"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M43.37,100.05 L43.37,119.26"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M43.37,119.25 L43.37,145.29"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M43.37,250.49 L43.37,254.81"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M56.49,12.46 L56.49,16.99"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M63.55,100.05 L63.55,145.29"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M66.79,81.01 L66.79,98.71"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M74.14,100.05 L74.14,145.29"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M84.75,250.49 L84.75,254.81"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M88.26,100.05 L88.26,145.29"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M93.22,81.01 L93.22,98.71"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M102.38,100.05 L102.38,145.29"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M116.50,100.05 L116.50,145.29"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M120.99,215.38 L120.99,230.58"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M127.10,254.80 L127.10,263.09"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M127.13,250.49 L127.13,254.81"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M128.86,105.58 L128.86,145.29"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M129.62,12.46 L129.62,16.99"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M129.62,17.98 L129.62,65.72"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M129.62,81.01 L129.62,98.71"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M141.22,105.58 L141.22,145.29"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M144.07,81.01 L144.07,98.71"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M145.20,157.92 L145.20,170.49"
+								style="stroke:#000000;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M153.59,100.05 L153.59,145.29"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M153.59,186.39 L153.59,197.62"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M169.50,157.92 L169.50,170.49"
+								style="stroke:#000000;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M-0.07,12.46 L169.58,12.46"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M-0.07,16.98 L169.58,16.98"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M-0.05,17.98 L169.71,17.98"
+								style="stroke:#000000;stroke-linecap:butt;stroke-width:0.15;"></path>
+							<path d="M29.84,26.38 L169.71,26.38"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M7.15,40.77 L169.71,40.77"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M29.84,48.29 L169.71,48.29"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M-0.20,65.72 L169.71,65.72"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.15;"></path>
+							<path d="M-0.20,70.24 L169.71,70.24"
+								style="stroke:#000000;stroke-linecap:butt;stroke-width:0.15;"></path>
+							<path d="M-0.20,75.11 L169.71,75.11"
+								style="stroke:#000000;stroke-linecap:butt;stroke-width:0.15;"></path>
+							<path d="M-0.20,81.01 L169.71,81.01"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M-0.20,86.91 L169.71,86.91"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M-0.20,92.81 L169.71,92.81"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M-0.20,98.71 L169.71,98.71"
+								style="stroke:#000000;stroke-linecap:butt;stroke-width:0.15;"></path>
+							<path d="M-0.20,100.05 L169.71,100.05"
+								style="stroke:#000000;stroke-linecap:butt;stroke-width:0.15;"></path>
+							<path d="M116.46,105.58 L153.64,105.58"
+								style="stroke:#B2B2B2;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M-0.20,112.73 L169.71,112.73"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M-0.20,119.25 L169.71,119.25"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M11.14,125.60 L169.71,125.60"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M11.14,131.95 L169.71,131.95"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M29.85,138.47 L169.71,138.47"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M-0.20,145.29 L169.71,145.29"
+								style="stroke:#000000;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M145.15,157.92 L169.56,157.92"
+								style="stroke:#000000;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M145.15,170.49 L169.56,170.49"
+								style="stroke:#000000;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M-0.05,184.68 L169.56,184.68"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.70;"></path>
+							<path d="M-0.05,186.39 L169.56,186.39"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M-0.05,197.61 L169.56,197.61"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M-0.05,199.81 L169.56,199.81"
+								style="stroke:#000000;stroke-linecap:butt;stroke-width:0.30;"></path>
+							<path d="M-0.05,199.81 L169.56,199.81"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.70;"></path>
+							<path d="M-0.05,204.34 L169.56,204.34"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M-0.05,215.38 L169.65,215.38"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M24.14,222.40 L169.65,222.40"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M24.14,230.57 L169.65,230.57"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M-0.15,236.59 L169.65,236.59"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M-0.15,250.49 L169.65,250.49"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M-0.05,254.80 L127.15,254.80"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M84.70,254.80 L127.18,254.80"
+								style="stroke:#58595B;stroke-linecap:butt;stroke-width:0.15;"></path>
+							<path d="M127.05,254.80 L169.65,254.80"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M-0.05,241.26 L72.64,241.26"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-dasharray:1.05,1.54;stroke-width:0.70;"></path>
+							<path d="M95.17,241.26 L169.56,241.26"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-dasharray:1.05,1.54;stroke-width:0.70;"></path>
+							<path d="M169.50,157.92 L169.50,170.49"
+								style="stroke:#000000;stroke-linecap:butt;stroke-width:0.10;"></path>
+							<path d="M7.20,17.98 L7.20,65.72"
+								style="stroke:#7F7F7F;stroke-linecap:butt;stroke-width:0.12;"></path>
+							<path d="M-0.05,241.26 L72.64,241.26"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-dasharray:1.05,1.54;stroke-width:0.70;"></path>
+							<path d="M95.17,241.26 L169.56,241.26"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-dasharray:1.05,1.54;stroke-width:0.70;"></path>
+							<path d="M-0.07,12.46 L169.58,12.46"
+								style="stroke:#5D5D5D;stroke-linecap:butt;stroke-width:0.12;"></path></svg>
+
+
+
+						<div class="hce"
+							style="left: 0mm; top: 0mm; width: 139.84mm; height: 5.82mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps5"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 139.84mm;">
+										<span class="hrt cs40">■ 지방세법 시행규칙[별지 제3호서식]&nbsp;</span><span
+											class="hrt cs34">&nbsp;&lt;개정 2019. 12. 31.&gt;</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 139.84mm; top: 0mm; width: 29.66mm; height: 5.82mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 1.50mm;">
+									<div class="hls ps45"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 29.65mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 5.82mm; width: 169.50mm; height: 6.64mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 0.50mm;">
+									<div class="hls ps54"
+										style="line-height: 4.80mm; white-space: nowrap; left: 0mm; top: -0.28mm; height: 5.64mm; width: 169.50mm;">
+										<span class="hrt cs39">취득세 ( [ ]기한 내 / [ ]기한 후] ) 신고서</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 12.46mm; width: 56.49mm; height: 4.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps62"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0.35mm; top: 0.55mm; height: 3.17mm; width: 56.13mm;">
+										<span class="hrt cs27">관리번호</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 56.49mm; top: 12.46mm; width: 73.13mm; height: 4.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps62"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0.35mm; top: 0.55mm; height: 3.17mm; width: 72.77mm;">
+										<span class="hrt cs27">접수 일자</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 129.62mm; top: 12.46mm; width: 39.88mm; height: 4.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps62"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0.35mm; top: 0.55mm; height: 3.17mm; width: 39.53mm;">
+										<span class="hrt cs27">처리기간 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;즉시</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 16.98mm; width: 169.50mm; height: 1mm;">
+							<div class="hcD" style="left: 1.80mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 0.25mm; white-space: nowrap; left: 0mm; top: -0.02mm; height: 0.35mm; width: 165.90mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 17.98mm; width: 7.20mm; height: 47.73mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 17.27mm;">
+									<div class="hls ps49"
+										style="line-height: 3.10mm; white-space: nowrap; left: 0mm; top: -0.19mm; height: 3.88mm; width: 7.20mm;">
+										<span class="hrt cs36">신</span>
+									</div>
+									<div class="hls ps49"
+										style="line-height: 3.10mm; white-space: nowrap; left: 0mm; top: 4.46mm; height: 3.88mm; width: 7.20mm;">
+										<span class="hrt cs36">고</span>
+									</div>
+									<div class="hls ps49"
+										style="line-height: 3.10mm; white-space: nowrap; left: 0mm; top: 9.12mm; height: 3.88mm; width: 7.20mm;">
+										<span class="hrt cs36">인</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 7.20mm; top: 17.98mm; width: 22.69mm; height: 22.79mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 8.29mm;">
+									<div class="hls ps48"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 22.69mm;">
+										<span class="hrt cs28">취득자</span>
+									</div>
+									<div class="hls ps48"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: 3.25mm; height: 2.82mm; width: 22.69mm;">
+										<span class="hrt cs28">(신고자)</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 29.90mm; top: 17.98mm; width: 99.73mm; height: 8.40mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps56"
+										style="line-height: 2.79mm; white-space: nowrap; left: 1.06mm; top: 0.53mm; height: 3.53mm; width: 98.66mm;">
+										<span class="hrt cs27">성명</span><span class="hrt cs28">(법인명)&nbsp;</span><span
+											class="hrt cs29"><?=$row[j1]?><?if($row[m1]!=""){?> , <?=$row[m1]?><?}?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 129.62mm; top: 17.98mm; width: 39.88mm; height: 8.40mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps56"
+										style="line-height: 2.48mm; white-space: nowrap; left: 1.06mm; top: 0.55mm; height: 3.17mm; width: 38.82mm;">
+										<span class="hrt cs27">&nbsp;<?=$row[k1]?></span>
+									</div>
+									<div class="hls ps56"
+										style="line-height: 2.48mm; white-space: nowrap; left: 1.06mm; top: 5.06mm; height: 3.17mm; width: 38.82mm;">
+										<span class="hrt cs27">&nbsp;<?=$row[n1]?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 29.90mm; top: 26.38mm; width: 99.73mm; height: 14.39mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps56"
+										style="line-height: 0.17mm; white-space: pre-line; left: 1.06mm; top: 0.56mm; height: 5.64mm; width: 98.66mm;">
+										<span class="hrt cs28"><?=$row[l1]?></span>
+									</div>
+									<div class="hls ps56"
+										style="line-height: 0.17mm; white-space: pre-line; left: 1.06mm; top: 7.04mm; height: 5.64mm; width: 98.66mm;" >
+										<span class="hrt cs28"><?=$row[o1]?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 129.62mm; top: 26.38mm; width: 39.88mm; height: 14.39mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps56"
+										style="line-height: 2.48mm; white-space: nowrap; left: 1.06mm; top: 0.55mm; height: 3.17mm; width: 38.82mm;">
+										<span class="hrt cs27">전화번호</span>
+									</div>
+									<div class="hls ps56"
+										style="line-height: 2.48mm; white-space: pre-line; left: 1.06mm; top: 5.06mm; height: 6.34mm; width: 38.82mm;">
+										<span class="hrt cs27">&nbsp;<?=$row[p1]?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 7.20mm; top: 40.77mm; width: 22.69mm; height: 22.94mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 9.37mm;">
+									<div class="hls ps48"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 22.69mm;">
+										<span class="hrt cs28">전</span>
+									</div>
+									<div class="hls ps48"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: 3.25mm; height: 2.82mm; width: 22.69mm;">
+										<span class="hrt cs28">소유자</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 29.90mm; top: 40.77mm; width: 99.73mm; height: 7.02mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps56"
+										style="line-height: 2.79mm; white-space: pre-line; left: 1.06mm; top: 0.53mm; height: 3.53mm; width: 98.66mm;">
+										<span class="hrt cs27">성명</span><span class="hrt cs28"><?=$rowi[d_com_name]?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 129.62mm; top: 40.77mm; width: 39.88mm; height: 7.02mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps56"
+										style="line-height: 2.48mm; white-space: pre-line; left: 1.06mm; top: 0.55mm; height: 3.17mm; width: 38.82mm;">
+										<span class="hrt cs27">&nbsp;<?=$rowi[d_bubin_no]?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 29.90mm; top: 48.29mm; width: 99.73mm; height: 15.93mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps56"
+										style="line-height: 0.48mm; white-space: pre-line; left: 1.06mm; top: 0.55mm; height: 5.84mm; width: 98.66mm;">
+										<span class="hrt cs28"><?=$rowi[d_addr]?></span>
+									</div>
+									<div class="hls ps56"
+										style="line-height: 0.48mm; white-space: pre-line; left: 1.06mm; top: 8.58mm; height: 5.84mm; width: 98.66mm;">
+										<span class="hrt cs28"></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 129.62mm; top: 48.29mm; width: 39.88mm; height: 15.93mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps56"
+										style="line-height: 2.48mm; white-space: nowrap; left: 1.06mm; top: 0.55mm; height: 3.17mm; width: 38.82mm;">
+										<span class="hrt cs27">전화번호</span>
+									</div>
+									<div class="hls ps56"
+										style="line-height: 2.48mm; white-space: nowrap; left: 1.06mm; top: 5.06mm; height: 5.84mm; width: 38.82mm;">
+										<span class="hrt cs27"></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 65.72mm; width: 29.90mm; height: 4.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.18mm;">
+									<div class="hls ps67"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 29.89mm;">
+										<span class="hrt cs27">매도자와의 관계</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 29.90mm; top: 65.72mm; width: 139.60mm; height: 4.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 139.60mm;">
+										<span class="hrt cs29">&nbsp;</span><span class="hrt cs27">□
+											배우자 또는 직계존비속 &nbsp;□ 기타&nbsp;</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 70.24mm; width: 169.50mm; height: 4.38mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps57"
+										style="line-height: 3.10mm; white-space: nowrap; left: 0mm; top: -0.19mm; height: 3.88mm; width: 169.50mm;">
+										<span class="hrt cs36">취 득 물 건 내 역</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 75.11mm; width: 25.17mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.69mm;">
+									<div class="hls ps49"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 25.17mm;">
+										<span class="hrt cs29">소재지</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 25.17mm; top: 75.11mm; width: 144.33mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.69mm;">
+									<div class="hls ps49"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 144.33mm;">
+										<span class="hrt cs29"><?=$rowi[d_bubin_no]?> <?=$row[h1]?>동 <?=$row[i]?>호</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 81.01mm; width: 25.17mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.69mm;">
+									<div class="hls ps49"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 25.17mm;">
+										<span class="hrt cs29">취득물건</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 25.17mm; top: 81.01mm; width: 18.20mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.69mm;">
+									<div class="hls ps48"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 18.19mm;">
+										<span class="hrt cs29">취득일</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 43.37mm; top: 81.01mm; width: 23.42mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.69mm;">
+									<div class="hls ps48"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 23.41mm;">
+										<span class="hrt cs29">면적</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 66.79mm; top: 81.01mm; width: 26.43mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.69mm;">
+									<div class="hls ps50"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 26.42mm;">
+										<span class="hrt cs29">종류</span><span class="hrt cs27">(지목/차종)</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 93.22mm; top: 81.01mm; width: 36.41mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.69mm;">
+									<div class="hls ps48"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 36.41mm;">
+										<span class="hrt cs29">용도</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 129.62mm; top: 81.01mm; width: 14.45mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.69mm;">
+									<div class="hls ps48"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.44mm;">
+										<span class="hrt cs29">취득원인</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 144.07mm; top: 81.01mm; width: 25.43mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.69mm;">
+									<div class="hls ps48"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 25.43mm;">
+										<span class="hrt cs29">취득가액</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 86.91mm; width: 25.17mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 1.04mm;">
+									<div class="hls ps49"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 25.17mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 25.17mm; top: 86.91mm; width: 18.20mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps64"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 18.19mm;">
+										<span class="hrt cs28"><?=f_date_yyyymmdd($row[balance_date])?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 43.37mm; top: 86.91mm; width: 23.42mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps64"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 23.41mm;">
+										<span class="hrt cs28"><?=f_money0($row[con_building_area])?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 66.79mm; top: 86.91mm; width: 26.43mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps51"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 26.42mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 93.22mm; top: 86.91mm; width: 36.41mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps51"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 36.41mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 129.62mm; top: 86.91mm; width: 14.45mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps64"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 14.44mm;">
+										<span class="hrt cs28">매매</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 144.07mm; top: 86.91mm; width: 25.43mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps64"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 25.43mm;">
+										<span class="hrt cs28"><?=f_money0($row[af1])?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 92.81mm; width: 25.17mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 1.04mm;">
+									<div class="hls ps49"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 25.17mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 25.17mm; top: 92.81mm; width: 18.20mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 18.19mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 43.37mm; top: 92.81mm; width: 23.42mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 23.41mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 66.79mm; top: 92.81mm; width: 26.43mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 26.42mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 93.22mm; top: 92.81mm; width: 36.41mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 36.41mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 129.62mm; top: 92.81mm; width: 14.45mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 14.44mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 144.07mm; top: 92.81mm; width: 25.43mm; height: 5.00mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 25.43mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 98.71mm; width: 169.50mm; height: 1.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps49"
+										style="line-height: 0.25mm; white-space: nowrap; left: 0mm; top: -0.02mm; height: 0.35mm; width: 169.50mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 100.05mm; width: 43.37mm; height: 12.68mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 4.25mm;">
+									<div class="hls ps54"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 43.36mm;">
+										<span class="hrt cs27">세목</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 43.37mm; top: 100.05mm; width: 20.17mm; height: 12.68mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 4.25mm;">
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 20.16mm;">
+										<span class="hrt cs27">과세표준액</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 63.55mm; top: 100.05mm; width: 10.59mm; height: 12.68mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 4.25mm;">
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 10.58mm;">
+										<span class="hrt cs27">세율</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 74.14mm; top: 100.05mm; width: 14.12mm; height: 12.68mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.75mm;">
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 14.11mm;">
+										<span class="hrt cs27">①</span>
+									</div>
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: 3.34mm; height: 3.17mm; width: 14.11mm;">
+										<span class="hrt cs27">산출</span>
+									</div>
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: 6.84mm; height: 3.17mm; width: 14.11mm;">
+										<span class="hrt cs27">세액</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 88.26mm; top: 100.05mm; width: 14.12mm; height: 12.68mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.75mm;">
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 14.11mm;">
+										<span class="hrt cs27">②</span>
+									</div>
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: 3.34mm; height: 3.17mm; width: 14.11mm;">
+										<span class="hrt cs27">감면</span>
+									</div>
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: 6.84mm; height: 3.17mm; width: 14.11mm;">
+										<span class="hrt cs27">세액</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 102.38mm; top: 100.05mm; width: 14.12mm; height: 12.68mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.75mm;">
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 14.11mm;">
+										<span class="hrt cs27">③&nbsp;</span>
+									</div>
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: 3.34mm; height: 3.17mm; width: 14.11mm;">
+										<span class="hrt cs27">기납부</span>
+									</div>
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: 6.84mm; height: 3.17mm; width: 14.11mm;">
+										<span class="hrt cs27">세 &nbsp;액</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 116.50mm; top: 100.05mm; width: 37.08mm; height: 5.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.67mm;">
+									<div class="hls ps44"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 37.08mm;">
+										<span class="hrt cs27">가산세</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 153.59mm; top: 100.05mm; width: 15.91mm; height: 12.68mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.93mm;">
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 15.90mm;">
+										<span class="hrt cs27">신고세액</span>
+									</div>
+									<div class="hls ps50"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: 3.34mm; height: 3.17mm; width: 15.90mm;">
+										<span class="hrt cs27">합 &nbsp;&nbsp;&nbsp;계</span>
+									</div>
+									<div class="hls ps50"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: 6.86mm; height: 2.82mm; width: 15.90mm;">
+										<span class="hrt cs32">(①-②-③+④)</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 116.50mm; top: 105.58mm; width: 12.36mm; height: 7.15mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.12mm;">
+									<div class="hls ps50"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 12.35mm;">
+										<span class="hrt cs28">신 &nbsp;고</span>
+									</div>
+									<div class="hls ps50"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: 2.96mm; height: 2.82mm; width: 12.35mm;">
+										<span class="hrt cs28">불성실</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 128.86mm; top: 105.58mm; width: 12.36mm; height: 7.15mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.12mm;">
+									<div class="hls ps50"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 12.36mm;">
+										<span class="hrt cs28">납 &nbsp;부</span>
+									</div>
+									<div class="hls ps50"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: 2.96mm; height: 2.82mm; width: 12.36mm;">
+										<span class="hrt cs28">불성실</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 141.22mm; top: 105.58mm; width: 12.36mm; height: 7.15mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.12mm;">
+									<div class="hls ps50"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 12.36mm;">
+										<span class="hrt cs28">계</span>
+									</div>
+									<div class="hls ps50"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: 2.96mm; height: 2.82mm; width: 12.36mm;">
+										<span class="hrt cs28">④</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 112.73mm; width: 43.37mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 1mm;">
+									<div class="hls ps49"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 43.36mm;">
+										<span class="hrt cs29">합계</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 43.37mm; top: 112.73mm; width: 20.17mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps64"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 20.16mm;">
+										<span class="hrt cs28"><?=f_money0($row[af1])?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 63.55mm; top: 112.73mm; width: 10.59mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 10.58mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 74.14mm; top: 112.73mm; width: 14.12mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 88.26mm; top: 112.73mm; width: 14.12mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 102.38mm; top: 112.73mm; width: 14.12mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 116.50mm; top: 112.73mm; width: 12.36mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.35mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 128.86mm; top: 112.73mm; width: 12.36mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.36mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 141.22mm; top: 112.73mm; width: 12.36mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.36mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 153.59mm; top: 112.73mm; width: 15.91mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps65"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 15.90mm;">
+										<span class="hrt cs27"><?=f_money0($row[al1])?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 119.25mm; width: 11.20mm; height: 26.03mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 9.56mm;">
+									<div class="hls ps54"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 11.19mm;">
+										<span class="hrt cs28">취득세&nbsp;</span>
+									</div>
+									<div class="hls ps54"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: 2.96mm; height: 2.82mm; width: 11.19mm;">
+										<span class="hrt cs28">등</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 11.20mm; top: 119.25mm; width: 32.18mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 1.26mm;">
+									<div class="hls ps58"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 32.17mm;">
+										<span class="hrt cs28">취득세 신고세액</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 43.37mm; top: 119.25mm; width: 20.17mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 20.16mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 63.55mm; top: 119.25mm; width: 10.59mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 2.53mm;">
+									<div class="hls ps52"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 10.58mm;">
+										<span class="hrt cs28">%</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 74.14mm; top: 119.25mm; width: 14.12mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps50"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 88.26mm; top: 119.25mm; width: 14.12mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 102.38mm; top: 119.25mm; width: 14.12mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 116.50mm; top: 119.25mm; width: 12.36mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.35mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 128.86mm; top: 119.25mm; width: 12.36mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.36mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 141.22mm; top: 119.25mm; width: 12.36mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.36mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 153.59mm; top: 119.25mm; width: 15.91mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 15.90mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 11.20mm; top: 125.60mm; width: 32.18mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 1.26mm;">
+									<div class="hls ps58"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 32.17mm;">
+										<span class="hrt cs28">지방교육세 신고세액</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 43.37mm; top: 125.60mm; width: 20.17mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 20.16mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 63.55mm; top: 125.60mm; width: 10.59mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 2.53mm;">
+									<div class="hls ps52"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 10.58mm;">
+										<span class="hrt cs28">%</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 74.14mm; top: 125.60mm; width: 14.12mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps50"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 88.26mm; top: 125.60mm; width: 14.12mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 102.38mm; top: 125.60mm; width: 14.12mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 116.50mm; top: 125.60mm; width: 12.36mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.35mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 128.86mm; top: 125.60mm; width: 12.36mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.36mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 141.22mm; top: 125.60mm; width: 12.36mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.36mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 153.59mm; top: 125.60mm; width: 15.91mm; height: 6.35mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 15.90mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 11.20mm; top: 131.95mm; width: 18.70mm; height: 13.34mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 1.38mm;">
+									<div class="hls ps49"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 18.70mm;">
+										<span class="hrt cs28">농어촌 특별세&nbsp;</span>
+									</div>
+									<div class="hls ps49"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: 3.25mm; height: 2.82mm; width: 18.70mm;">
+										<span class="hrt cs28">신고세액</span>
+									</div>
+									<div class="hls ps58"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: 6.63mm; height: 2.82mm; width: 18.70mm;">
+										<span class="hrt cs28">(취득세)</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 29.90mm; top: 131.95mm; width: 13.48mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 1.35mm;">
+									<div class="hls ps58"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 13.48mm;">
+										<span class="hrt cs28">부과분</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 43.37mm; top: 131.95mm; width: 20.17mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 20.16mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 63.55mm; top: 131.95mm; width: 10.59mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 2.71mm;">
+									<div class="hls ps52"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 10.58mm;">
+										<span class="hrt cs28">%</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 74.14mm; top: 131.95mm; width: 14.12mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 88.26mm; top: 131.95mm; width: 14.12mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 102.38mm; top: 131.95mm; width: 14.12mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 116.50mm; top: 131.95mm; width: 12.36mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.35mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 128.86mm; top: 131.95mm; width: 12.36mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.36mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 141.22mm; top: 131.95mm; width: 12.36mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.36mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 153.59mm; top: 131.95mm; width: 15.91mm; height: 6.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 15.90mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 29.90mm; top: 138.47mm; width: 13.48mm; height: 6.82mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 1.50mm;">
+									<div class="hls ps58"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 13.48mm;">
+										<span class="hrt cs28">감면분</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 43.37mm; top: 138.47mm; width: 20.17mm; height: 6.82mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 20.16mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 63.55mm; top: 138.47mm; width: 10.59mm; height: 6.82mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI" style="top: 3mm;">
+									<div class="hls ps52"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 10.58mm;">
+										<span class="hrt cs28">%</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 74.14mm; top: 138.47mm; width: 14.12mm; height: 6.82mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 88.26mm; top: 138.47mm; width: 14.12mm; height: 6.82mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 102.38mm; top: 138.47mm; width: 14.12mm; height: 6.82mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 14.11mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 116.50mm; top: 138.47mm; width: 12.36mm; height: 6.82mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.35mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 128.86mm; top: 138.47mm; width: 12.36mm; height: 6.82mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.36mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 141.22mm; top: 138.47mm; width: 12.36mm; height: 6.82mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 12.36mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 153.59mm; top: 138.47mm; width: 15.91mm; height: 6.82mm;">
+							<div class="hcD" style="left: 0mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 15.90mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 145.29mm; width: 169.50mm; height: 11.92mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps63"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 169.50mm;">
+										<span class="hrt cs42">상기 본인은 위 취득물건이 「지방세법」제11조제4항나목에 따른 "1세대
+											4주택&nbsp;</span><span class="hrt cs28">이상"에 해당하지 않음을 확인합니다.</span>
+									</div>
+									<div class="hls ps63"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: 3.79mm; height: 3.17mm; width: 169.50mm;">
+										<span class="hrt cs28">※ 향후 4주택 이상임이 확인되는 경우 가산세를 포함하여 추가로
+											취득세가 부과될 수 있음</span><span class="hrt cs27">&nbsp;&nbsp;</span>
+									</div>
+									<div class="hls ps69"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: 8.22mm; height: 3.53mm; width: 169.50mm;">
+										<span class="hrt cs31">신고인 :&nbsp;</span><span
+											class="hrt cs29">&nbsp;&nbsp;&nbsp;&nbsp;<?=$row[j1]?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?if($row[m1]!=""){?> , <?=$row[m1]?><?}else{?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?}?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+											&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 157.21mm; width: 169.50mm; height: 0.71mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 0.50mm; white-space: nowrap; left: 0mm; top: -0.04mm; height: 0.71mm; width: 169.50mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 157.92mm; width: 145.20mm; height: 8.40mm;">
+							<div class="hcD" style="left: 1mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps53"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 143.20mm;">
+										<span class="hrt cs29">&nbsp;&nbsp;&nbsp;&nbsp;「지방세법」 제20조제1항,
+											제152조제1항, 같은 법 시행령 제33조제1항,「농어촌특</span>
+									</div>
+									<div class="hls ps53"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: 3.70mm; height: 3.53mm; width: 143.20mm;">
+										<span class="hrt cs29">별세법」 제7조에 따라 위와 같이 신고합니다.&nbsp;</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 145.20mm; top: 157.92mm; width: 24.30mm; height: 12.57mm;">
+							<div class="hcD" style="left: 1mm; top: 0.50mm;">
+								<div class="hcI" style="top: 0.70mm;">
+									<div class="hls ps54"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 22.30mm;">
+										<span class="hrt cs27">접수</span><span class="hrt cs28">(영수)</span><span
+											class="hrt cs27">일자</span>
+									</div>
+									<div class="hls ps54"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: 3.34mm; height: 3.17mm; width: 22.30mm;"></div>
+									<div class="hls ps54"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: 6.84mm; height: 3.17mm; width: 22.30mm;">
+										<span class="hrt cs27">(인)</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 166.32mm; width: 96.79mm; height: 4.17mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 0.50mm;">
+									<div class="hls ps43"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 96.79mm;">
+										<span class="hrt cs44"><?=$yy?>년 &nbsp;&nbsp;<?=$mm?>월&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;일</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 96.79mm; top: 166.32mm; width: 48.41mm; height: 4.17mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps43"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 48.40mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 170.49mm; width: 55.46mm; height: 4.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 0.50mm;">
+									<div class="hls ps46"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 55.46mm;">
+										<span class="hrt cs26">신고인</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 55.46mm; top: 170.49mm; width: 109.35mm; height: 4.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 0.50mm;">
+									<div class="hls ps68"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 109.35mm;">
+										<span class="hrt cs29">&nbsp;&nbsp;&nbsp;&nbsp;<?=$row[j1]?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?if($row[m1]!=""){?> , <?=$row[m1]?><?}else{?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?}?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+											&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 164.81mm; top: 170.49mm; width: 4.69mm; height: 4.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 1.70mm;">
+									<div class="hls ps61"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 5.08mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 175.01mm; width: 55.46mm; height: 9.67mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 2.54mm;">
+									<div class="hls ps46"
+										style="line-height: 3.76mm; white-space: nowrap; left: 0mm; top: -0.23mm; height: 4.59mm; width: 55.46mm;">
+										<span class="hrt cs37">시장ㆍ군수ㆍ구청장</span><span class="hrt cs28">&nbsp;&nbsp;</span><span
+											class="hrt cs29">귀하</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 55.46mm; top: 175.01mm; width: 41.33mm; height: 9.67mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 3.07mm;">
+									<div class="hls ps68"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 41.33mm;">
+										<span class="hrt cs29">대리인</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 96.79mm; top: 175.01mm; width: 68.02mm; height: 9.67mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 1.50mm;">
+									<div class="hls ps61"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 68.02mm;">
+										<span class="hrt cs27">법무사법인태율</span>
+									</div>
+									<div class="hls ps61"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: 3.34mm; height: 3.17mm; width: 68.02mm;">
+										<span class="hrt cs27">CS2팀 법무사 <?=$kk[name]?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 164.81mm; top: 175.01mm; width: 4.69mm; height: 9.67mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 6.85mm;">
+									<div class="hls ps61"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 5.08mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 184.68mm; width: 169.50mm; height: 1.70mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI">
+									<div class="hls ps55"
+										style="line-height: 0.50mm; white-space: nowrap; left: 0mm; top: -0.04mm; height: 0.71mm; width: 169.50mm;">
+										<span class="hrt cs33">ㅣ</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 186.39mm; width: 15.19mm; height: 11.23mm;">
+							<div class="hcD" style="left: 1mm; top: 1mm;">
+								<div class="hcI" style="top: 3.28mm;">
+									<div class="hls ps59"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: 0.21mm; height: 2.82mm; width: 12.39mm;">
+										<span class="hrt cs28">첨부서류</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 15.19mm; top: 186.39mm; width: 138.40mm; height: 11.23mm;">
+							<div class="hcD" style="left: 1mm; top: 0.50mm;">
+								<div class="hcI">
+									<div class="hls ps60"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0.85mm; top: 0.92mm; height: 2.82mm; width: 135.54mm;">
+										<span class="hrt cs28">1. 취득가액 등을 증명할 수 있는 서류(매매계약서, 잔금영수증,
+											법인장부 등) 사본 각 1부</span>
+									</div>
+									<div class="hls ps60"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0.85mm; top: 4.09mm; height: 2.82mm; width: 135.54mm;">
+										<span class="hrt cs28">2. 취득세 감면신청서 1부 &nbsp;&nbsp;3. 취득세 비과세
+											확인서 1부</span>
+									</div>
+									<div class="hls ps60"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0.85mm; top: 7.27mm; height: 2.82mm; width: 135.54mm;">
+										<span class="hrt cs28">4. 기납부세액 영수증 사본 1부 &nbsp;5. 위임장 1부(대리인만
+											해당합니다)</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 153.59mm; top: 186.39mm; width: 15.91mm; height: 11.23mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 2.65mm;">
+									<div class="hls ps54"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 15.90mm;">
+										<span class="hrt cs28">수수료</span>
+									</div>
+									<div class="hls ps54"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: 2.96mm; height: 2.82mm; width: 15.90mm;">
+										<span class="hrt cs28">없음</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 197.61mm; width: 169.50mm; height: 2.20mm;">
+							<div class="hcD" style="left: 1mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps59"
+										style="line-height: 0.25mm; white-space: nowrap; left: 0mm; top: 0.34mm; height: 0.35mm; width: 166.69mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 199.81mm; width: 169.50mm; height: 4.52mm;">
+							<div class="hcD" style="left: 0mm; top: 0mm;">
+								<div class="hcI" style="top: 0.50mm;">
+									<div class="hls ps54"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 169.50mm;">
+										<span class="hrt cs26">위임장</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 204.34mm; width: 169.50mm; height: 6.02mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI" style="top: 0.50mm;">
+									<div class="hls ps53"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 165.90mm;">
+										<span class="hrt cs29">위의 신고인 본인은 위임받는 사람에게 취득세 신고에 관한 일체의 권리와
+											의무를 위임합니다.</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 210.36mm; width: 145.20mm; height: 5.02mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps66"
+										style="line-height: 2.79mm; white-space: nowrap; left: 0mm; top: -0.18mm; height: 3.53mm; width: 141.59mm;">
+										<span class="hrt cs29">위임자(신고인) &nbsp;&nbsp;&nbsp;&nbsp;<?=$row[j1]?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?if($row[m1]!=""){?> , <?=$row[m1]?><?}else{?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?}?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+											&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 145.20mm; top: 210.36mm; width: 24.30mm; height: 5.02mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI" style="top: 0.71mm;">
+									<div class="hls ps61"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 20.70mm;">
+										<span class="hrt cs28">(서명 또는 인)</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 215.38mm; width: 24.19mm; height: 21.21mm;">
+							<div class="hcD" style="left: 0mm; top: 1mm;">
+								<div class="hcI" style="top: 5.78mm;">
+									<div class="hls ps50"
+										style="line-height: 3.10mm; white-space: nowrap; left: 0mm; top: -0.19mm; height: 3.88mm; width: 24.19mm;">
+										<span class="hrt cs36">위임받는&nbsp;</span>
+									</div>
+									<div class="hls ps50"
+										style="line-height: 3.10mm; white-space: nowrap; left: 0mm; top: 4.08mm; height: 3.88mm; width: 24.19mm;">
+										<span class="hrt cs36">사람</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 24.19mm; top: 215.38mm; width: 96.80mm; height: 7.02mm;">
+							<div class="hcD" style="left: 1mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 94.80mm;">
+										<span class="hrt cs27">성명 &nbsp;법무사법인 태율 &nbsp;CS2팀의 법무사 <?=$kk[name]?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 120.99mm; top: 215.38mm; width: 48.51mm; height: 7.02mm;">
+							<div class="hcD" style="left: 1mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps53"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 46.51mm;">
+										<span class="hrt cs27">위임자와의 관계 &nbsp;대리인</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 24.19mm; top: 222.40mm; width: 96.80mm; height: 8.17mm;">
+							<div class="hcD" style="left: 1mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 94.80mm;">
+										<span class="hrt cs27">사업자등록번호 &nbsp;<?=$kk[comp_no]?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 120.99mm; top: 222.40mm; width: 48.51mm; height: 8.17mm;">
+							<div class="hcD" style="left: 1mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 46.51mm;">
+										<span class="hrt cs27">전화번호 &nbsp;<?=$kk[tel]?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 24.19mm; top: 230.57mm; width: 145.31mm; height: 6.02mm;">
+							<div class="hcD" style="left: 1mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps46"
+										style="line-height: 1.48mm; white-space: pre-line; left: 0mm; top: -0.16mm; height: 3.17mm; width: 143.31mm;">
+										<span class="hrt cs27">주소 &nbsp;<?=$kk[addr]?></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 236.59mm; width: 72.59mm; height: 4.67mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps53"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 68.99mm;">
+										<span class="hrt cs27">*위임장은 별도 서식을 사용할 수 있습니다.</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 72.59mm; top: 236.59mm; width: 22.63mm; height: 3.85mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps47"
+										style="line-height: 0.25mm; white-space: nowrap; left: 0mm; top: -0.02mm; height: 0.35mm; width: 19.02mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 95.21mm; top: 236.59mm; width: 49.99mm; height: 4.67mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps53"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 46.38mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 145.20mm; top: 236.59mm; width: 24.30mm; height: 4.67mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps53"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 20.70mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 72.59mm; top: 240.44mm; width: 22.63mm; height: 4.67mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps47"
+										style="line-height: 2.48mm; white-space: nowrap; left: 0mm; top: -0.16mm; height: 3.17mm; width: 19.02mm;">
+										<span class="hrt cs27">자르는 선</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 241.26mm; width: 72.59mm; height: 3.85mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps53"
+										style="line-height: 0.25mm; white-space: nowrap; left: 0mm; top: -0.02mm; height: 0.35mm; width: 68.99mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 95.21mm; top: 241.26mm; width: 74.29mm; height: 3.85mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps53"
+										style="line-height: 0.25mm; white-space: nowrap; left: 0mm; top: -0.02mm; height: 0.35mm; width: 70.68mm;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 245.11mm; width: 169.50mm; height: 5.38mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps50"
+										style="line-height: 3.10mm; white-space: nowrap; left: 0mm; top: -0.19mm; height: 3.88mm; width: 165.90mm;">
+										<span class="hrt cs30">접수증</span><span class="hrt cs26">(취득세
+											신고서)</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 250.49mm; width: 43.37mm; height: 4.32mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps53"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 39.77mm;">
+										<span class="hrt cs28">신고인</span><span class="hrt cs41">(대리인)</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 43.37mm; top: 250.49mm; width: 41.38mm; height: 4.32mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps53"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 37.78mm;">
+										<span class="hrt cs28">취득물건 신고내용</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 84.75mm; top: 250.49mm; width: 42.38mm; height: 4.32mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps53"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 38.78mm;">
+										<span class="hrt cs28">접수 일자</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 127.13mm; top: 250.49mm; width: 42.38mm; height: 4.32mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps53"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 38.78mm;">
+										<span class="hrt cs28">접수번호</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 0mm; top: 254.80mm; width: 127.10mm; height: 8.28mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI" style="top: 0.43mm;">
+									<div class="hls ps53"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 123.50mm;">
+										<span class="hrt cs28">「지방세법」 제20조제1항, 제152조제1항, 같은 법 시행령
+											제33조제1항, 「농어촌특별세법」&nbsp;</span>
+									</div>
+									<div class="hls ps53"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: 2.96mm; height: 2.82mm; width: 123.50mm;">
+										<span class="hrt cs28">제7조에 따라 신고한 신고서의 접수증입니다.</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 127.10mm; top: 254.80mm; width: 42.40mm; height: 4.32mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps53"
+										style="line-height: 2.17mm; white-space: nowrap; left: 0mm; top: -0.14mm; height: 2.82mm; width: 38.81mm;">
+										<span class="hrt cs28">접수자</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="hce"
+							style="left: 127.10mm; top: 259.12mm; width: 42.40mm; height: 3.97mm;">
+							<div class="hcD" style="left: 1.80mm; top: 1mm;">
+								<div class="hcI">
+									<div class="hls ps61"
+										style="line-height: 1.88mm; white-space: nowrap; left: 0mm; top: -0.12mm; height: 2.47mm; width: 38.81mm;">
+										<span class="hrt cs43">(서명 또는 인)</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+<?}?>
+
+<div id="floatMenu" style="position:fixed;text-align:right;width:100%;">
+<input type=button value=" 출력 " id="printx" onclick="f_printx();" style="background-color:#0054FF;color:white;width:50px;height:22px;">&nbsp;&nbsp;</td>
+</div>
+</body>
+
+<script>
+function f_printx(){
+	$("#printx").hide();
+
+    factory.printing.header = "";
+    factory.printing.footer = "";
+    factory.printing.portrait = true;  //true 세로,false 가로
+    factory.printing.leftMargin = 0;
+    factory.printing.topMargin = 0;
+    factory.printing.rightMargin = 0;
+    factory.printing.bottomMargin = 0;
+    var isPrint = factory.printing.Print(false, window); //출력
+}
+$(document).ready(function() { 
+	// 기존 css에서 플로팅 배너 위치(top)값을 가져와 저장한다.
+	var floatPosition = parseInt($("#floatMenu").css('top'));
+	//alert(floatPosition);
+	// 250px 이런식으로 가져오므로 여기서 숫자만 가져온다. parseInt( 값 );
+	//alert(floatPosition); 
+	$(window).scroll(function() {
+		var scrollTop = $(window).scrollTop();
+		var newPosition = "5px"; 
+		$("#floatMenu").stop().animate({
+			"top" : newPosition
+		},300); 
+	}).scroll(); 
+});
+</script>
+</html>

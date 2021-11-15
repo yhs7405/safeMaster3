@@ -1,0 +1,128 @@
+<?	include ("../include/dbconn.php");
+	include ("../include/login_ch.php");
+	include ("../include/function.php");
+	include ("../include/excel.inc");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$chx		=	$_REQUEST[ch];
+	$apply_date	=	$_REQUEST[apply_date];
+
+	$wherequery = " where idx in ({$chx}) "; 
+
+	$sql = "update tbl_suljung set sg_b_date='{$apply_date}' {$wherequery} ";
+	db_query($sql);
+
+
+	$datex = date("YmdHis");
+	$sql = "update tbl_suljung set suljung_update='{$datex}'  where idx in ({$chx}) ";
+	//echo $sql;
+	db_query($sql);  //최신날짜 갱신
+
+
+	//-엑셀다운로드------------------------------------------------------------------
+
+	$objPHPExcel = new PHPExcel();
+
+	$sql = "select * from tbl_suljung $wherequery order by idx asc ";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+	$i=1;
+
+	$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(30);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(10);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(20);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(15);
+
+
+     $objPHPExcel->setActiveSheetIndex(0)
+                 ->setCellValue("A".$i, "전표일자")
+                 ->setCellValue("B".$i, "부서")
+                 ->setCellValue("C".$i, "프로젝트코드")
+                 ->setCellValue("D".$i, "부가세유형")
+                 ->setCellValue("E".$i, "거래처코드")
+                 ->setCellValue("F".$i, "거래처명")
+                 ->setCellValue("G".$i, "공급가액")
+                 ->setCellValue("H".$i, "외화금액")
+                 ->setCellValue("I".$i, "환율")
+                 ->setCellValue("J".$i, "부가세")
+                 ->setCellValue("K".$i, "적요")
+                 ->setCellValue("L".$i, "매출계정")
+                 ->setCellValue("M".$i, "돈들어온계좌번호")
+                 ->setCellValue("N".$i, "수수료");
+	$i++;
+
+	while($row = $stmt->fetch()){
+
+		$jj=f_jijum_all($row[jijum_code]);  //지점정보
+		$hh= f_junib_all($row[a1]);         //전입정보
+		$tt= f_hyunjang_all($row[h_idx]);         //현장정보
+
+		//$ff = f_suljung_bosu_all($row[idx],$row[gukto]);
+	
+	  if($row[gukto] != "gukto")
+	  {
+	  	$gubun_code = $jj[trade_code];
+	  	$gubun_name = $jj[trade_name];
+	  } else {
+	  	$gubun_code = "1388301535";
+	  	$gubun_name = "국토교통부";
+	  }
+	  $aw_name	= $hh["aw".$row[suljung_no]];
+	  $aw_jumin	=	f_jumin_valid($hh["aw".$row[suljung_no]."_jumin"]);
+
+		 $objPHPExcel->setActiveSheetIndex(0)
+					 ->setCellValue("A".$i, $row[sg_b_date])
+					 ->setCellValue("B".$i, "00005")
+					 ->setCellValue("C".$i, $tt[project_code])
+					 ->setCellValue("D".$i, "11")
+					 ->setCellValue("E".$i, $gubun_code)
+					 ->setCellValue("F".$i, $gubun_name)
+					 ->setCellValue("G".$i, $row[bosu_price])
+					 ->setCellValue("H".$i, "")
+					 ->setCellValue("I".$i, "")
+					 ->setCellValue("J".$i, $row[bosu_price_vat])
+					 ->setCellValue("K".$i, "채무자:".$aw_name."/".$tt[h_name]." ".$hh[h1]."동".$hh[i1]."호")
+					 ->setCellValue("L".$i, "4209")
+					 ->setCellValue("M".$i, "")
+					 ->setCellValue("N".$i, "");
+		$i++;
+	}
+
+
+	 $objPHPExcel->getActiveSheet()->setTitle('Seet name');
+	 $objPHPExcel->setActiveSheetIndex(0); 
+	 $filename = iconv("UTF-8", "EUC-KR", "세금계산서발행");
+	 header('Content-Type: application/vnd.ms-excel');
+	 header("Content-Disposition: attachment;filename=".$filename.".xls");
+	 header('Cache-Control: max-age=0');
+	 $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+	 $objWriter->save('php://output');
+	 exit;
+
+	echo "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>";
+	echo "<html>";
+	echo "<body>";
+	echo "<center>";
+	echo "<br>";
+	echo "<input type=button value=' 처리 완료! ' onclick='javascript:opener.document.ffx.submit();;window.close();'>";
+	echo "</center>";
+	echo "</body>";
+	echo "</html>";
+	exit;
+
+?>
+
+

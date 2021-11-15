@@ -1,0 +1,119 @@
+<?	include ("../include/dbconn.php");
+	include ("../include/login_ch.php");
+	include ("../include/function.php");
+	include ("../include/excel.inc");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$chx		=	$_REQUEST[ch];
+	$apply_date	=	$_REQUEST[apply_date];
+
+	$wherequery = " where idx in ({$chx}) "; 
+	
+	$sql = "update tbl_junib set hy_b_date='{$apply_date}' {$wherequery} ";
+	db_query($sql);
+
+
+	$datex = date("YmdHis");
+	$sql = "update tbl_junib set ijun_update='{$datex}'  where idx in ({$chx}) ";
+	//echo $sql;
+	db_query($sql);  //최신날짜 갱신
+
+	//-엑셀다운로드------------------------------------------------------------------
+
+	$objPHPExcel = new PHPExcel();
+	
+	$sql = "select * from tbl_junib $wherequery order by idx desc ";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+	$i=1;
+
+	$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+	$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(30);
+
+
+	$objPHPExcel->setActiveSheetIndex(0)
+					 ->setCellValue("A".$i, "현금영수증 대량등록 양식")
+					 ->setCellValue("B".$i, "")
+					 ->setCellValue("C".$i, "")
+					 ->setCellValue("D".$i, "")
+					 ->setCellValue("E".$i, "")
+					 ->setCellValue("F".$i, "")
+					 ->setCellValue("G".$i, "")
+					 ->setCellValue("H".$i, "")
+					 ->setCellValue("I".$i, "")
+					 ->setCellValue("J".$i, "")
+					 ->setCellValue("K".$i, "");
+	$i++;
+	$objPHPExcel->setActiveSheetIndex(0)
+           ->setCellValue("A".$i, "거래유형")
+           ->setCellValue("B".$i, "거래구분")
+           ->setCellValue("C".$i, "식별번호")
+           ->setCellValue("D".$i, "과세형태")
+           ->setCellValue("E".$i, "거래금액")
+           ->setCellValue("F".$i, "봉사료")
+           ->setCellValue("G".$i, "주문자명")
+           ->setCellValue("H".$i, "주문상품명")
+           ->setCellValue("I".$i, "주문번호")
+           ->setCellValue("J".$i, "이메일")
+           ->setCellValue("K".$i, "휴대폰");
+	$i++;
+
+	while($row = $stmt->fetch()){
+
+		//$jj= $row[aq1]+$row[ar1]+$row[as1]+$row[at1];  //현금영수금액
+    //$$a_sum = $jj[trade_code];
+	
+
+	 $objPHPExcel->setActiveSheetIndex(0)
+					 ->setCellValue("A".$i, "소득공제")
+					 ->setCellValue("B".$i, "일반")
+					 ->setCellValue("C".$i, "010-000-1234")
+					 ->setCellValue("D".$i, "과세")
+					 ->setCellValue("E".$i, $row[aq1]+$row[ar1]+$row[as1]+$row[at1])
+					 ->setCellValue("F".$i, "0")
+					 ->setCellValue("G".$i, "")
+					 ->setCellValue("H".$i, "소유권이전보수료")
+					 ->setCellValue("I".$i, "")
+					 ->setCellValue("J".$i, "")
+					 ->setCellValue("K".$i, "010-0000-0000");
+		$i++;
+	}
+
+
+	 $objPHPExcel->getActiveSheet()->setTitle('Seet name');
+	 $objPHPExcel->setActiveSheetIndex(0); 
+	 $filename = iconv("UTF-8", "EUC-KR", "현금영수증발행"); //$apply_date
+	 header('Content-Type: application/vnd.ms-excel');
+	 header("Content-Disposition: attachment;filename=".$filename.".xls");
+	 header('Cache-Control: max-age=0');
+	 $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+	 $objWriter->save('php://output');
+	 exit;
+
+	echo "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>";
+	echo "<html>";
+	echo "<body>";
+	echo "<center>";
+	echo "<br>";
+	echo "<input type=button value=' 처리 완료! ' onclick='javascript:opener.document.ffx.submit();;window.close();'>";
+	echo "</center>";
+	echo "</body>";
+	echo "</html>";
+	exit;
+
+
+?>
+
+

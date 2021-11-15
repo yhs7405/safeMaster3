@@ -1,0 +1,56 @@
+<?	include ("../include/dbconn.php");
+	include ("../include/login_ch.php");
+	include ("../include/function.php");
+
+//	error_reporting(E_ALL);
+//	ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_junib";
+
+	$chx	=	$_POST[ch];
+
+	$wherequery = " where 1=1 ";
+
+	$mm = array();
+	for($i=0;$i<count($chx);$i++){
+		$mm[$i] = "'$chx[$i]'";
+	}
+	$chxm = implode( ',', $mm);
+
+	$wherequery.= " and a1 in ({$chxm}) and  (ifnull(aq1,0)+ifnull(ar1,0)+ifnull(as1,0)+ifnull(at1,0))>0 and (hy_b_date is null or hy_b_date='') "; 
+
+	//print_r($chx);
+	//echo "<br>{$wherequery}";
+
+	$sql = "select * from $board_dbname  $wherequery order by idx desc ";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	while($row = $stmt->fetch()){
+
+		$datex = date("Ymd");
+
+		$sql = "select * from tbl_junib where a1 = '{$row[a1]}'  ";
+		$row = db_query_fetch($sql);
+
+		//echo $row[j1]."<br>";
+
+		include "../Popbill/RegistIssue_cash.php";
+
+	}
+
+	echo "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>";
+	echo "<html>";
+	echo "<body>";
+	echo "<center>";
+	echo "<br>";
+	echo "<input type=button value=' 처리 완료! ' onclick='javascript:opener.document.ffx.submit();;window.close();'>";
+	echo "</center>";
+	echo "</body>";
+	echo "</html>";
+	exit;
+
+?>

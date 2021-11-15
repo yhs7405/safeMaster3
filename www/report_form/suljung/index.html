@@ -1,0 +1,78 @@
+<?	include ("../../include/dbconn.php");
+	include ("../../include/login_ch.php");
+	include ("../../include/function.php");
+
+//	error_reporting(E_ALL);
+//	ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_suljung";
+
+	$chx	=	$_REQUEST[ch];
+	$chxm	=	implode( ',', $chx);
+
+	$wherequery.= " where idx in ({$chxm}) "; 
+
+
+	$datex = date("YmdHis");
+	$sql = "update tbl_suljung set suljung_update='{$datex}'  where idx in ({$chxm}) ";
+	//echo $sql;
+	db_query($sql);  //최신날짜 갱신
+
+
+	$sql = "select * from $board_dbname  $wherequery  ";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	$row = $stmt->fetch();
+
+		//echo $row[idx];
+
+		//설정정보
+		$sql = "select * from tbl_suljung where idx={$row[idx]} limit 1";
+		//echo $sql;
+		$ss = db_query_fetch($sql);
+
+		//지점
+		$sql = "select * from tbl_bank_jijum_rate where jijum_code='{$ss[jijum_code]}'  limit 1";
+		//echo $sql;
+		$jj = db_query_fetch($sql);
+
+		//은행
+		$sql = "select bank_alias from tbl_bank_info where bank_code='{$ss[bank_code]}' limit 1";
+		//echo $sql;
+		$bb = db_query_fetch($sql);
+
+		//echo $bb[bank_alias];
+
+		if($bb[bank_alias]=="우리"){ //우리인 경우
+			//echo "우리";
+			include_once('./youngsu_woori.html');
+		}else if($bb[bank_alias]=="하나"){  //하나인 경우
+			if($jj[gubun_code]=="basic"){  //기본
+				//echo "하나-기본";
+				include_once('./youngsu_hana_basic.html');
+			}else{  //본점
+				//echo "하나-본점";
+				include_once('./youngsu_hana_bonjum.html');
+			}
+		}else{  //기본인 경우
+			//echo "----기본---";
+			include_once('./biyong.html');  //공용폼
+		}
+
+
+		//보수료 출력일 디비입력
+		$datex = date("Ymd");
+		$sql = "update tbl_suljung set sjb_c_date='{$datex}' where idx = '{$row[idx]}'";
+		db_query($sql);
+
+	?>
+
+	<script>
+		//alert("처리되었습니다.");
+		//opener.location.reload();
+		//window.close();
+	</script>

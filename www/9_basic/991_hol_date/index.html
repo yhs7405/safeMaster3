@@ -1,0 +1,345 @@
+<?	include ("../../include/dbconn.php");
+	include ("../../include/login_ch.php");
+	include ("../../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$i_year		=	trim($_REQUEST[i_year]);	//한라인에 몇개를 출력할건지//
+
+	$board_dbname	=	"tbl_code_set a left outer join tbl_holiday_set b ON a.j_code = b.h_name ";
+//SELECT * FROM tbl_code_set a left outer join tbl_holiday_set b ON a.j_code = b.h_name and b.h_year='2020' where a.j_gubun = 'hol_code'  order by a.j_code
+	if($i_year=="") $i_year=date("Y");
+	$board_dbname.=	"and b.h_year='{$i_year}' ";
+
+
+
+
+	$wherequery = " where 1=1  ";
+
+
+
+	if($h1!="")				$wherequery.= " and h1 = '".$h1."' ";
+	if($i1!="")				$wherequery.= " and i1 = '".$i1."' ";
+	if($j1!="")				$wherequery.= " and (j1 like '%{$j1}%' or m1 like '%{$j1}%')";
+	
+	
+
+?>
+
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+<title>재무돌이</title>
+<?include ("../../include/common.php");?>
+</head>
+
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+
+<script>
+
+$(function() {
+		$( ".datepickx" ).datepicker({
+			autosize: true,
+			showOn: "button",
+			buttonImage: "/images/calendar.gif",
+			buttonImageOnly: true,
+			changeMonth: true,
+			changeYear: true,
+			dateFormat: "yymmdd",
+			dayNamesShort:["일","월","화","수","목","금","토"],
+			monthNamesShort:["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"]
+		});
+	 $("img.ui-datepicker-trigger").attr("style", "margin-bottom:4px; vertical-align:middle; cursor: Pointer;");
+});
+$( ".datepickx" ).datepicker( "option", "dayNamesShort",  [ "Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam" ] );
+
+
+
+
+
+
+</script>
+
+
+<body style="overflow:auto; width:1880px;">
+
+<!--header 시작-->
+	<?include ("../../include/header.php");?>
+<!--header 종료-->
+
+
+<!--top-메뉴시작-->
+	<?include ("../../include/header_menu.php");?>
+<!--top-메뉴종료-->
+
+
+<div id="content">
+
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" title="Go to Home" class="tip-bottom">기본정보</a> <a href="#" class="current">공휴일설정</a> </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+
+			<form name=ffx  method=post>
+			<div  style="width:100%;background-color:#EFEFEF;border-top:1px solid #e7e7e7;border-left:1px solid #e7e7e7;border-right:1px solid #e7e7e7;">
+				
+				<table style="background-color:#EFEFEF;text-align:center;width:1800px;">
+					<tr style="text-align:center">
+					  <th style="text-align:center">
+						<button type="button" class="btn btn-success" onclick="javascript:modifyProductQuantity('i_year',-1);" style="background-color:#4374D9;height:60px;width:60px;margin-top:0px;font-size:20pt;"><</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					  <input type=text name="i_year" id="i_year" value="<?=$i_year?>" style="width:120px;height:50px;text-align:center;margin-top:10px;font-size:20pt;" readonly>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<button type="button" class="btn btn-success" onclick="javascript:modifyProductQuantity('i_year',1);" style="background-color:#4374D9;height:60px;width:60px;margin-top:0px;font-size:20pt;">></button>
+					  </th>
+					</tr>
+				</table>
+			</div>
+			</form>
+		</div>
+
+
+	<form name=ffm method="post">
+
+ 				<input type=hidden name="i_year" value="<?=$i_year?>">
+       <div class="widget-box">
+          <div class="widget-content nopadding">
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>공휴일명</th>
+                  <th>공휴일</th>
+                  <th>년도</th>
+                  <th>월</th>
+                  <th>일</th>
+                </tr>
+
+              </thead>
+              <tbody>
+
+	<?
+
+	$sql = "select * from $board_dbname  $wherequery order by  cast(a.j_code as unsigned) asc ";
+//	$sql = "select * from $board_dbname  $wherequery order by  cast(h1 as unsigned) asc,cast(i1 as unsigned) asc limit $Page_link[start],$view_num";
+//	echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	if($rows > 0){
+		$T=1;$i=1;
+			while($row = $stmt->fetch()){?>
+
+
+				<input type=hidden name="idx_<?=$i?>" value="<?=$row[idx]?>">
+				<input type=hidden name="h_name_<?=$i?>" value="<?=$row[j_code]?>">
+
+
+
+                <tr class="odd gradeX">
+                	<td style="text-align:center;width:80px;"><?=($page-1)*$view_num+$T?></td>
+	                <td style="text-align:center;width:300px;"><input type=text class="j_name_xx" name="j_name_<?=$i?>" value="<?=$row[j_name]?>" style="width:200px;height:15px;text-align:center;" onkeydown="nextFocus(h_name_<?=$i+1?>)" readonly> </td>
+	                <td style="text-align:center;width:100px;"><?=f_date($row[h_date])?></td>
+	                <td style="text-align:center;width:100px;"><?=$row[h_year]?></td>
+                  <td style="text-align:center;width:150px;">
+                  	<select name="h_month_<?=$i?>" id="h_month_<?=$i?>" style="width:80px;height:30px;" class="h_month_xx"  onfocus='javascript:focusFunction(this);'> 
+											<option value="">--선택--</option>
+											<option value="01" <?if($row[h_month]=="01"){?>selected<?}?>>01</option>
+											<option value="02" <?if($row[h_month]=="02"){?>selected<?}?>>02</option>
+											<option value="03" <?if($row[h_month]=="03"){?>selected<?}?>>03</option>
+											<option value="04" <?if($row[h_month]=="04"){?>selected<?}?>>04</option>
+											<option value="05" <?if($row[h_month]=="05"){?>selected<?}?>>05</option>
+											<option value="06" <?if($row[h_month]=="06"){?>selected<?}?>>06</option>
+											<option value="07" <?if($row[h_month]=="07"){?>selected<?}?>>07</option>
+											<option value="08" <?if($row[h_month]=="08"){?>selected<?}?>>08</option>
+											<option value="09" <?if($row[h_month]=="09"){?>selected<?}?>>09</option>
+											<option value="10" <?if($row[h_month]=="10"){?>selected<?}?>>10</option>
+											<option value="11" <?if($row[h_month]=="11"){?>selected<?}?>>11</option>
+											<option value="12" <?if($row[h_month]=="12"){?>selected<?}?>>12</option>
+									  </select>
+									</td>
+                  <td style="text-align:center;width:150px;">
+                  	<select name="h_day_<?=$i?>" id="h_day_<?=$i?>" style="width:80px;height:30px;" class="h_day_xx"  onfocus='javascript:focusFunction(this);'> 
+											<option value="">--선택--</option>
+											<option value="01" <?if($row[h_day]=="01"){?>selected<?}?>>01</option>
+											<option value="02" <?if($row[h_day]=="02"){?>selected<?}?>>02</option>
+											<option value="03" <?if($row[h_day]=="03"){?>selected<?}?>>03</option>
+											<option value="04" <?if($row[h_day]=="04"){?>selected<?}?>>04</option>
+											<option value="05" <?if($row[h_day]=="05"){?>selected<?}?>>05</option>
+											<option value="06" <?if($row[h_day]=="06"){?>selected<?}?>>06</option>
+											<option value="07" <?if($row[h_day]=="07"){?>selected<?}?>>07</option>
+											<option value="08" <?if($row[h_day]=="08"){?>selected<?}?>>08</option>
+											<option value="09" <?if($row[h_day]=="09"){?>selected<?}?>>09</option>
+											<option value="10" <?if($row[h_day]=="10"){?>selected<?}?>>10</option>
+											<option value="11" <?if($row[h_day]=="11"){?>selected<?}?>>11</option>
+											<option value="12" <?if($row[h_day]=="12"){?>selected<?}?>>12</option>
+											<option value="13" <?if($row[h_day]=="13"){?>selected<?}?>>13</option>
+											<option value="14" <?if($row[h_day]=="14"){?>selected<?}?>>14</option>
+											<option value="15" <?if($row[h_day]=="15"){?>selected<?}?>>15</option>
+											<option value="16" <?if($row[h_day]=="16"){?>selected<?}?>>16</option>
+											<option value="17" <?if($row[h_day]=="17"){?>selected<?}?>>17</option>
+											<option value="18" <?if($row[h_day]=="18"){?>selected<?}?>>18</option>
+											<option value="19" <?if($row[h_day]=="19"){?>selected<?}?>>19</option>
+											<option value="20" <?if($row[h_day]=="20"){?>selected<?}?>>20</option>
+											<option value="21" <?if($row[h_day]=="21"){?>selected<?}?>>21</option>
+											<option value="22" <?if($row[h_day]=="22"){?>selected<?}?>>22</option>
+											<option value="23" <?if($row[h_day]=="23"){?>selected<?}?>>23</option>
+											<option value="24" <?if($row[h_day]=="24"){?>selected<?}?>>24</option>
+											<option value="25" <?if($row[h_day]=="25"){?>selected<?}?>>25</option>
+											<option value="26" <?if($row[h_day]=="26"){?>selected<?}?>>26</option>
+											<option value="27" <?if($row[h_day]=="27"){?>selected<?}?>>27</option>
+											<option value="28" <?if($row[h_day]=="28"){?>selected<?}?>>28</option>
+											<option value="29" <?if($row[h_day]=="29"){?>selected<?}?>>29</option>
+											<option value="30" <?if($row[h_day]=="30"){?>selected<?}?>>30</option>
+											<option value="31" <?if($row[h_day]=="31"){?>selected<?}?>>31</option>
+									  </select>
+									</td>
+               </tr>
+
+
+	<?$T++;$i++;}
+}else{?>
+              <tr class="title">
+                <td colspan=13 align=center>내용이 없습니다.</td>
+              </tr>
+<?}?>
+
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+		<div class="fg-toolbar ui-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix" style="height:30px;">
+
+<?if($_SESSION["admin_permission"][ch_252]=="y"){?>
+			<div style="float:right;margin-top:0px;margin-bottom:10px;margin-right:10px;">
+				<button type="button" class="btn btn-success" onclick="javascript:f_submit();">저장</button>
+			</div>
+<?}?>
+		</div>
+
+		</form>
+
+    </div>
+  </div>
+</div>
+
+<!--bottom-시작-->
+	<?include ("../../include/bottom.php");?>
+<!--bottom-종료-->
+
+<script src="/js/common.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+<script>
+
+function f_popup_s(a1){//설정상세조회
+	var url    ="/01_fdata/1_finput/regist.php?a1="+encodeURI(a1);
+	var title  = "listpops";
+	var status = "toolbar=no,directories=no,scrollbars=yes,resizable=no,status=no,menubar=no,width=1890, height=950, top=0,left=20"; 
+	var a = window.open(url, title,status);
+	a.focus();
+}
+
+function f_popup_g(a1){//기본상세조회
+	var url    ="/2_custom/1_search/popup_g.php?a1="+encodeURI(a1);
+	var title  = "listpops";
+	var status = "toolbar=no,directories=no,scrollbars=yes,resizable=no,status=no,menubar=no,width=1400, height=840, top=0,left=20"; 
+	var a = window.open(url, title,status);
+	a.focus();
+}
+
+function f_va_upload(){//가상계좌번호 업로드
+	//alert("code : ");
+	var url    ="/02_cost/3_vaccount/vaupload.php";
+	var title  = "listpops";
+	var status = "toolbar=no,directories=no,scrollbars=yes,resizable=no,status=no,menubar=no,width=1400, height=840, top=0,left=20"; 
+	var a = window.open(url, title,status);
+	a.focus();
+}
+
+function f_list_upload(){//리스트 업로드
+	//alert("code : ");
+	var url    ="/02_cost/3_vaccount/listupload.php";
+	var title  = "listpops";
+	var status = "toolbar=no,directories=no,scrollbars=yes,resizable=no,status=no,menubar=no,width=1400, height=840, top=0,left=20"; 
+	var a = window.open(url, title,status);
+	a.focus();
+}
+
+function f_chogi(){  //초기화
+	if(confirm("초기화 하시겠습니까?")){
+
+			$("#woori_sand_date_ch").prop("checked", false);
+
+			$(".woori_sand_date").prop("checked", false);
+
+			$(".woori_sand_date_xx").val("");
+			
+	}
+}
+
+
+
+
+$(document).ready(function(){
+	$("#woori_sand_date_ch").click(function(e){ 
+		if($(this).is(":checked")){
+			//alert(1);
+			$(".woori_sand_date").prop("checked", true);
+		}else{
+			//alert(0);
+			$(".woori_sand_date").prop("checked", false);
+		}
+	});
+
+
+});
+
+function f_back(){
+	//document.ffx.i_year.value=f_year;
+	document.ffx.target="_self";
+	document.ffx.action = "index.html";
+	document.ffx.submit();
+}
+
+function modifyProductQuantity(id, quantity){
+        
+	var q = parseInt($("#"+id).val())+parseInt(quantity);    
+	$("#"+id).val(q);
+	f_back();
+}
+
+function f_submit(){
+	var v = document.ffm;
+	if(confirm("저장하시겠습니까?")){
+		var frm    = document.ffm;
+		var url    = "post.php";
+		var title  = "listpop22";
+		var status = "toolbar=no,directories=no,scrollbars=no,resizable=no,status=no,menubar=no,width=100, height=100, top=400,left=800"; 
+		var aa2 = window.open("", title,status);
+		frm.target = title;
+		frm.action = url;
+		frm.method = "post";
+		frm.submit();
+		aa2.focus();
+	}
+}
+
+
+
+</script>
+
+</body>
+</html>

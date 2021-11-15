@@ -1,0 +1,24 @@
+<?	include ("../include/dbconn.php");
+	include ("../include/login_ch.php");
+	include ("../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$idx=	$_REQUEST[idx];
+
+	$sql = "update tbl_junib set hy_b_date='' where idx={$idx} ";
+	db_query($sql);
+
+	echo "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>";
+	echo "<html>";
+	echo "<body>";
+	echo "<center>";
+	echo "<br>";
+	echo "<input type=button value=' 해제 완료! ' onclick='javascript:opener.document.ffx.submit();window.close();'>";
+	echo "</center>";
+	echo "</body>";
+	echo "</html>";
+	exit;
+
+	?>

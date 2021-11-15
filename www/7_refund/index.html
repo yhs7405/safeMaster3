@@ -1,0 +1,516 @@
+<?	include ("../include/dbconn.php");
+	include ("../include/login_ch.php");
+	include ("../include/function.php");
+
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_junib";
+
+	$h_idx				=	trim($_REQUEST[h_idx]);
+	$target_date		=	trim($_REQUEST[target_date]);
+	$s_date				=	trim($_REQUEST[s_date]);
+	$e_date				=	trim($_REQUEST[e_date]);
+
+	$target_date2		=	trim($_REQUEST[target_date2]);
+	$s_date2			=	trim($_REQUEST[s_date2]);
+	$e_date2			=	trim($_REQUEST[e_date2]);
+	$bank_code			=	trim($_REQUEST[bank_code]);
+	$jijum_code			=	trim($_REQUEST[jijum_code]);
+	$bank_null_ch	=	trim($_REQUEST[bank_null_ch]);
+
+	$h1					=	trim($_REQUEST[h1]);
+	$i1					=	trim($_REQUEST[i1]);
+	$j1					=	trim($_REQUEST[j1]);
+	$memo				=	trim($_REQUEST[memo]);
+	$refund_y			=	trim($_REQUEST[refund_y]);
+	$kikan2_null_ch		=	trim($_REQUEST[kikan2_null_ch]);
+
+	if($target_date=="") $target_date="g1";
+	if($s_date=="")		$s_date=date("Ymd");
+	if($e_date=="")		$e_date=date("Ymd");
+
+	$view_num		=	trim($_REQUEST[view_num]);	//한라인에 몇개를 출력할건지//
+	if($_REQUEST[page]==""){$page=1;}else{$page=$_REQUEST[page];}
+	$Page_List		=	10;							//링크페이지를 몇개씩 보여줄건지.. 1 / 2 / 3
+	if(!$view_num)	$view_num=	100;				//리스트 갯수
+
+
+	$wherequery = " where 1=1  ";
+
+	if($h_idx!="")			$wherequery.= " and h_idx = ".$h_idx." ";
+	if($bank_null_ch=="Y")	$wherequery.= " and d1 <> '' ";
+	if($bank_code!="")		$wherequery.= " and d1 = '".$bank_code."' ";
+	if($jijum_code!="")		$wherequery.= " and e1 = '".$jijum_code."' ";
+	if($h1!="")				$wherequery.= " and h1 = '".$h1."' ";
+	if($i1!="")				$wherequery.= " and i1 = '".$i1."' ";
+	if($j1!="")				$wherequery.= " and (j1 like '%{$j1}%' or m1 like '%{$j1}%')";
+	
+	if($target_date!=""){
+		if(($s_date!="")&&($e_date!="")){
+			$imsi = "";
+			if(($target_date=="sjp_s_date")||($target_date=="sjp_j_date")||($target_date=="sjj_w_date")||($target_date=="sjp_b_date")){  //설정일때
+				$imsi = " and a1 in (select a1 from tbl_suljung where {$target_date} between {$s_date} and {$e_date} )";
+			}else{
+				if($target_date!="") {$imsi = " and {$target_date} between ";}
+				if($s_date==$e_date) {$imsi.= " {$s_date} and {$e_date} ";}
+				if($s_date!=$e_date) {$imsi.= " {$s_date} and {$e_date} ";}
+			}
+			$wherequery.=$imsi;
+		}
+	}
+
+if($kikan2_null_ch=="Y"){
+			if(($target_date2=="sjp_s_date")||($target_date2=="sjp_j_date")||($target_date2=="sjj_w_date")||($target_date2=="sjp_b_date")){ //설정일때
+				$imsi = " and a1 in (select a1 from tbl_suljung where  ({$target_date2}='' or {$target_date2} is null ))";
+			}else{
+				if($target_date2!="") {$imsi = " and ({$target_date2}='' or {$target_date2} is null )";}
+			}
+			$wherequery.=$imsi;
+}else{
+	if($target_date2!=""){
+		if(($s_date2!="")&&($e_date2!="")){
+			$imsi = "";
+			if(($target_date2=="sjp_s_date")||($target_date2=="sjp_j_date")||($target_date2=="sjj_w_date")||($target_date2=="sjp_b_date")){ //설정일때
+				$imsi = " and a1 in (select a1 from tbl_suljung where {$target_date2} between {$s_date2} and {$e_date2} )";
+			}else{
+				if($target_date2!="") {$imsi = " and {$target_date2} between ";}
+				if($s_date2==$e_date2) {$imsi.= " {$s_date2} and {$e_date2} ";}
+				if($s_date2!=$e_date2) {$imsi.= " {$s_date2} and {$e_date2} ";}
+			}
+			$wherequery.=$imsi;
+		}
+	}
+}
+
+	if($refund_y=="1"){ //환불대상자
+			$wherequery.= " and refund_fee>0 ";
+	}
+	if($refund_y=="2"){ //환불대상자(계좌미입력)
+			$wherequery.= " and refund_account is null ";
+	}
+	if($refund_y=="3"){ //환불없슴
+			$wherequery.= " and refund_fee=0 ";
+	}
+	if($refund_y=="4"){  //추가입금대상자
+			$wherequery.= " and refund_fee<0 ";
+	}
+
+	if($memo!=""){
+		$wherequery.= " and (a1 in ( (select a1 from tbl_junib where (memo like '%{$memo}%') or (ijp_s_memo  like '%{$memo}%') ";
+		$wherequery.= "      or (sjp_s_memo  like '%{$memo}%') or (ijp_j_memo  like '%{$memo}%') ";
+		$wherequery.= "      or (sjp_j_memo  like '%{$memo}%') or (ijj_w_memo  like '%{$memo}%') ";
+		$wherequery.= "      or (sjj_w_memo  like '%{$memo}%') or (ijp_b_memo  like '%{$memo}%') ";
+		$wherequery.= "      or (sjp_b_memo  like '%{$memo}%') or (refund_memo  like '%{$memo}%') ";
+		$wherequery.= "      or (refund_end_memo like '%{$memo}%') or (refund_memo  like '%{$memo}%')))  or ";
+		$wherequery.= "      a1 in (select a1 from tbl_sugum where sugum_memo like '%{$memo}%') )";
+	}
+
+	//echo $wherequery;
+	$rows_total = db_count_all($board_dbname,$wherequery);
+  $sqlaa=$wherequery;
+
+	function f_total($where){
+		$sql = "select sum(refund_fee) as rf from tbl_junib {$where}";
+		//echo $sql;
+		$ss = db_query_value($sql);
+		$mm[rf] = $ss[rf];
+		return $mm;
+	}
+	$ssm = f_total($wherequery);
+//  $sqlaa=$sql;
+?>
+
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+<title>재무돌이</title>
+<?include ("../include/common.php");?>
+</head>
+
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+
+<script>
+
+$(function() {
+		$( ".datepickx" ).datepicker({
+			autosize: true,
+			showOn: "button",
+			buttonImage: "/images/calendar.gif",
+			buttonImageOnly: true,
+			changeMonth: true,
+			changeYear: true,
+			dateFormat: "yymmdd",
+			dayNamesShort:["일","월","화","수","목","금","토"],
+			monthNamesShort:["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"]
+		});
+	 $("img.ui-datepicker-trigger").attr("style", "margin-bottom:4px; vertical-align:middle; cursor: Pointer;");    
+});
+$( ".datepickx" ).datepicker( "option", "dayNamesShort",  [ "Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam" ] );
+</script>
+
+
+
+<body style="overflow:auto; width:1880px;">
+
+<!--header 시작-->
+	<?include ("../include/header.php");?>
+<!--header 종료-->
+
+
+<!--top-메뉴시작-->
+	<?include ("../include/header_menu.php");?>
+<!--top-메뉴종료-->
+
+
+<div id="content">
+
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" title="Go to Home" class="tip-bottom">환불금관리</a> <a href="#" class="current">환불금조회</a> </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+
+			<div  style="width:100%;background-color:#EFEFEF;border-top:1px solid #e7e7e7;border-left:1px solid #e7e7e7;border-right:1px solid #e7e7e7;">
+			<form name=ffx method=post>
+				<input type=hidden name="view_num"  id="view_num"  value="<?=$view_num?>">
+				<input type=hidden name="page"  id="page"  value="<?=$page?>">
+				<table style="background-color:#EFEFEF;">
+				  <thead>
+					<tr>
+					  <th style="text-align:left;margin-top:10px;">
+						<div style="margin-left:550px;margin-bottom:5px;margin-top:5px;">
+						<button type="button" class="btn btn-success" onclick="javascript:f_date0();"  style="background-color:#F29661;font-size:8pt;height:26px;">당일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date1();"  style="background-color:#F29661;font-size:8pt;height:26px;">3일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date2();"  style="background-color:#F29661;font-size:8pt;height:26px;">1주일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date3();"  style="background-color:#F29661;font-size:8pt;height:26px;">2주일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date4();"  style="background-color:#F29661;font-size:8pt;height:26px;">1개월</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date5();"  style="background-color:#F29661;font-size:8pt;height:26px;">3개월</button>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<button type="button" class="btn btn-success" onclick="javascript:f_date20();"  style="background-color:#F29661;font-size:8pt;height:26px;">당일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date21();"  style="background-color:#F29661;font-size:8pt;height:26px;">3일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date22();"  style="background-color:#F29661;font-size:8pt;height:26px;">1주일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date23();"  style="background-color:#F29661;font-size:8pt;height:26px;">2주일</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date24();"  style="background-color:#F29661;font-size:8pt;height:26px;">1개월</button>
+						<button type="button" class="btn btn-success" onclick="javascript:f_date25();"  style="background-color:#F29661;font-size:8pt;height:26px;">3개월</button>
+						</div>
+						  &nbsp;&nbsp;&nbsp;&nbsp;현 장 명&nbsp;&nbsp;&nbsp;<?=f_hyunjang_select("h_idx",$h_idx," style='width:315px;'")?>&nbsp;&nbsp;
+
+						  &nbsp;&nbsp;&nbsp;기 간&nbsp;&nbsp;&nbsp;<select name=target_date style="width:200px;">
+						  <option value="g1" <?if($target_date=="g1"){?>selected<?}?>>접수일</option>
+						  <option value="ijp_s_date" <?if($target_date=="ijp_s_date"){?>selected<?}?>>필증수령일(이전)</option>
+						  <option value="ijp_j_date" <?if($target_date=="ijp_j_date"){?>selected<?}?>>필증전달일(이전)</option>
+						  <option value="ijj_w_date" <?if($target_date=="ijj_w_date"){?>selected<?}?>>필증정산일(이전)</option>
+						  <option value="ijp_b_date" <?if($target_date=="ijp_b_date"){?>selected<?}?>>고객배포일(이전)</option>
+						  <option value="refund_date" <?if($target_date=="refund_date"){?>selected<?}?>>환불일</option>
+						  <option value="sjp_s_date" <?if($target_date=="sjp_s_date"){?>selected<?}?>>필증수령일(설정)</option>
+						  <option value="sjp_j_date" <?if($target_date=="sjp_j_date"){?>selected<?}?>>필증전달일(설정)</option>
+						  <option value="sjj_w_date" <?if($target_date=="sjj_w_date"){?>selected<?}?>>필증정산일(설정)</option>
+						  <option value="sjp_b_date" <?if($target_date=="sjp_b_date"){?>selected<?}?>>고객배포일(설정)</option>
+						  </select>&nbsp;<input type=text name="s_date" id="s_date" value="<?=$s_date?>"  class="datepickx" size=8 maxlength=8 style="width:80px;height:20px;">~<input type=text name="e_date" id="e_date" value="<?=$e_date?>"  class="datepickx" size=8 maxlength=8 style="width:80px;height:20px;">
+
+						  &nbsp;&nbsp;&nbsp;기 간 2&nbsp;&nbsp;&nbsp;<select name=target_date2 style="width:200px;">
+						  <option value="">-선택-</option>
+						  <option value="g1" <?if($target_date2=="g1"){?>selected<?}?>>접수일</option>
+						  <option value="ijp_s_date" <?if($target_date2=="ijp_s_date"){?>selected<?}?>>필증수령일(이전)</option>
+						  <option value="ijp_j_date" <?if($target_date2=="ijp_j_date"){?>selected<?}?>>필증전달일(이전)</option>
+						  <option value="ijj_w_date" <?if($target_date2=="ijj_w_date"){?>selected<?}?>>필증정산일(이전)</option>
+						  <option value="ijp_b_date" <?if($target_date2=="ijp_b_date"){?>selected<?}?>>고객배포일(이전)</option>
+						  <option value="refund_date" <?if($target_date2=="refund_date"){?>selected<?}?>>환불일</option>
+						  <option value="sjp_s_date" <?if($target_date2=="sjp_s_date"){?>selected<?}?>>필증수령일(설정)</option>
+						  <option value="sjp_j_date" <?if($target_date2=="sjp_j_date"){?>selected<?}?>>필증전달일(설정)</option>
+						  <option value="sjj_w_date" <?if($target_date2=="sjj_w_date"){?>selected<?}?>>필증정산일(설정)</option>
+						  <option value="sjp_b_date" <?if($target_date2=="sjp_b_date"){?>selected<?}?>>고객배포일(설정)</option>
+						  </select>&nbsp;
+						  						  <input type="checkbox" id="kikan2_null_ch" name="kikan2_null_ch" <?if($kikan2_null_ch=="Y"){?>checked<?}?> value="Y">
+						  <input type=text name="s_date2" id="s_date2" value="<?=$s_date2?>"  class="datepickx" size=8 maxlength=8 style="width:80px;height:20px;">~<input type=text name="e_date2" id="e_date2" value="<?=$e_date2?>"  class="datepickx" size=8 maxlength=8 style="width:80px;height:20px;">
+
+						  <Br>
+						  &nbsp;&nbsp;&nbsp;&nbsp;은&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;행&nbsp;&nbsp;&nbsp;
+							<input type="checkbox" id="bank_null_ch" name="bank_null_ch" <?if($bank_null_ch=="Y"){?>checked<?}?> value="Y">&nbsp;&nbsp;&nbsp;
+
+							<select name="bank_code" id="bank_code"  onchange="javascript:select_detail('bank_code','jijum_code');" style='width:120px;'>
+								<option value="">--은행--</option>
+								<?
+								if($h_idx==""){
+									$sql = "select * from tbl_bank_info ";
+								}else{
+									$sql = "select b.bank_code,b.bank_name from tbl_bank_info b left join tbl_junib j on b.bank_code=j.d1 where j.h_idx={$h_idx} group by b.bank_code ";
+								}
+								$sosok_r = $pdo->prepare($sql);
+								$sosok_r->execute();
+								while($rr = $sosok_r->fetch()){?>
+									<option value="<?=$rr[bank_code]?>" <?if($rr[bank_code]==$bank_code){?>selected<?}?>><?=$rr[bank_name]?></option>
+								<?}?>
+							</select>
+							<select name="jijum_code" id="jijum_code" style='width:160px;'>
+								<?
+								if(($bank_code!="")&&($h_idx!="")){
+									$sql = "select b.jijum_code,b.jijum_name from tbl_bank_jijum b left join tbl_junib j on b.jijum_code=j.e1 where j.h_idx={$h_idx} and j.d1='{$bank_code}'  group by b.jijum_code order by b.jijum_code,b.jijum_name asc  ";
+									$mm = 1;
+								}else if(($bank_code!="")&&($h_idx=="")){
+									$sql = "select * from tbl_bank_jijum where bank_code='{$bank_code}' ";
+									$mm = 1;
+								}
+								if($mm==1){
+									$sosok_r = $pdo->prepare($sql);
+									$sosok_r->execute();?>
+										<option value="">--지점--</option>
+									<?while($rr = $sosok_r->fetch()){?>
+										<option value="<?=$rr[jijum_code]?>" <?if($rr[jijum_code]==$jijum_code){?>selected<?}?>><?=$rr[jijum_name]?></option>
+									<?}?>
+								<?}else{?>
+										<option value="">--지점--</option>
+								<?}?>
+							</select>
+						  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;동&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type=text name="h1" value="<?=$h1?>" style="width:80px;">
+						  &nbsp;&nbsp;&nbsp;호&nbsp;&nbsp;&nbsp;<input type=text name="i1" value="<?=$i1?>" style="width:80px;">
+						  &nbsp;&nbsp;&nbsp;이 름&nbsp;&nbsp;&nbsp;<input type=text name="j1" value="<?=$j1?>" style="width:147px;">
+						  &nbsp;&nbsp;&nbsp;&nbsp;비&nbsp;&nbsp;고&nbsp;&nbsp;&nbsp;&nbsp;<input type=text name="memo" value="<?=$memo?>" style="width:187px;">
+						  &nbsp;&nbsp;&nbsp;환불여부&nbsp;&nbsp;&nbsp;<select name="refund_y" style="width:190px;">
+							<option value="">--선택--</option>
+							<option value="1" <?if($refund_y==1){?>selected<?}?>>환불대상자</option>
+							<option value="2" <?if($refund_y==2){?>selected<?}?>>환불대상자(계좌미입력)</option>
+							<option value="3" <?if($refund_y==3){?>selected<?}?>>환불없슴</option>
+							<option value="4" <?if($refund_y==4){?>selected<?}?>>추가입금대상자</option>
+						  </select>
+					  </th>
+					  <th>
+						&nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-success" onclick="javascript:f_submitx();" style="background-color:#4374D9;height:60px;width:60px;margin-top:25px;">조회</button>
+					  </th>
+					</tr>
+				  </thead>
+				</table>
+			</div>
+			<table class="table table-bordered table-striped top_box" style="border-right:1px solid #e7e7e7;">
+			  <thead>
+				<tr style="height:40px;vertical-align: middle;">
+				  <th style="text-align:left;border-right:0px;"><b style="color:black;font-weight:bold;"><?if($h_idx!=""){?>현장명: <?=f_hyunjang_name($h_idx)?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?}?>
+				  <?if(($target_date!="")&&($s_date!="")&&($e_date!="")){?><?=f_cate($target_date)?>: <?=f_date($s_date)?>~ <?=f_date($e_date)?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?}?>
+				  <?if(($target_date2!="")&&($s_date2!="")&&($e_date2!="")){?><?=f_cate($target_date2)?>: <?=f_date($s_date2)?>~ <?=f_date($e_date2)?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?}?>
+				  총 <?=f_money0($rows_total)?>건</b>
+				  </th>
+				  <th style="text-align:right;border-left:0px;">
+					<button type="button" class="btn btn-success" onclick="javascript:f_excel();"  style="background-color:#F29661;">엑셀다운로드</button>&nbsp;&nbsp;&nbsp;&nbsp;
+					<button type="button" class="btn btn-success" onclick="javascript:f_detail_excel();"  style="background-color:#F29661;">상세엑셀다운로드</button>&nbsp;&nbsp;&nbsp;&nbsp;
+				  </th>
+				</tr>
+			  </thead>
+			</table>
+			</form>
+		</div>
+
+	<form name=ffm method="post">
+
+        <div class="widget-box">
+          <div class="widget-content nopadding">
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>No</th>
+
+                  <th>고객고유번호</th>
+                  <th>배포일</th>
+
+                  <th>취득자1</th>
+                  <th>취득자2</th>
+                  <th>전화번호</th>
+                  <th>환불금<br><?=f_money($ssm[rf])?></th>
+
+                  <th style="background-color:#70AD47;color:white;">환불은행</th>
+                  <th style="background-color:#70AD47;color:white;">환불계좌번호</th>
+                  <th style="background-color:#70AD47;color:white;">환불예금주</th>
+                  <th style="background-color:#70AD47;color:white;">환불금액</th>
+                  <th style="background-color:#70AD47;color:white;">환불일</th>
+                  <th style="background-color:#70AD47;color:white;">처리자</th>
+                  <th style="background-color:#70AD47;color:white;">추가대상여부</th>
+                  <th style="background-color:#70AD47;color:white;">환불비고</th>
+                  <th>재무돌이비고</th>
+                </tr>
+
+              </thead>
+              <tbody>
+
+	<?
+	$Link_Value = "?list_num={$view_num}&s_gubun=$s_gubun&s_search=$s_search";
+	$Page_link = _Make_Link($rows_total,$view_num,$Page_List,$page,$Link_Value,$img_pp,$img_p,$img_nn,$img_n);
+
+	$sql = "select * from $board_dbname  $wherequery order by  cast(h1 as unsigned) asc,cast(i1 as unsigned) asc limit $Page_link[start],$view_num";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	if($rows > 0){
+		$T=1;
+		while($row = $stmt->fetch()){?>
+
+
+				<input type=hidden name="idx_<?=$i?>" value="<?=$row[idx]?>">
+
+
+                <tr class="odd gradeX">
+                  <td style="text-align:center;"><?=($page-1)*$view_num+$T?></td>
+                  <td style="text-align:center;"><?=$row[a1]?></td>
+
+                  <td style="text-align:center;"><?=f_date($row[ijp_b_date])?></td>
+                  <td style="text-align:center;"><a href="javascript:f_popup_g('<?=$row[a1]?>');"  style="text-decoration:underline;color:red;"><?=$row[j1]?></td>
+                  <td style="text-align:center;"><?=$row[m1]?></td>
+                  <td style="text-align:center;"><?=$row[p1]?></td>
+                  <td style="text-align:center;"><?=f_money($row[refund_fee])?></td>
+
+                  <td style="text-align:center;"><?=$row[refund_bank]?></td><!--환불은행//-->
+                  <td style="text-align:center;"><?=$row[refund_account]?></td><!--환불계좌번호//-->
+                  <td style="text-align:center;"><?=$row[refund_name]?></td><!--환불예금주//-->
+                  <td style="text-align:center;"><?=f_money($row[refund_money])?></td><!--환불금액//-->
+                  <td style="text-align:center;"><?=f_date($row[refund_date])?></td><!--환불일//-->
+                  <td style="text-align:center;"><?=f_id_value($row[refund_id])?></td><!--처리자//-->
+                  <td style="text-align:center;"><?=f_Y_value($row[chuga_ibgum_daesang])?></td><!--추가대상여부//-->
+                  <td style="text-align:center;"><textarea style="width:100px;" name=refund_end_memo  cols=50 rows=1><?=$row[refund_memo]?></textarea></td><!--비고//-->
+									<td style="text-align:center;"><textarea style="width:100px;" name=ijp_s_memo  cols=50 rows=1><?=$row[ijp_s_memo]?></textarea></td><!--재무돌이비고//-->
+                </tr>
+
+
+	<?$T++;$i++;}
+}else{?>
+              <tr class="title">
+                <td colspan=16 align=center>내용이 없습니다.</td>
+              </tr>
+<?}?>
+
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+		<div class="fg-toolbar ui-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix" style="height:30px;">
+			<div class="dataTables_filter" id="DataTables_Table_0_filter"><label  style="float:left;">페이지당 </label>&nbsp;<select name="view_num" style="width:80px;" onchange="javascript:f_movex(this);">
+					<option selected="selected" value="10" <?if($view_num==10){?>selected<?}?>>10</option>
+					<option value="15" <?if($view_num==15){?>selected<?}?>>15</option>
+					<option value="20" <?if($view_num==20){?>selected<?}?>>20</option>
+					<option value="30" <?if($view_num==30){?>selected<?}?>>30</option>
+					<option value="50" <?if($view_num==50){?>selected<?}?>>50</option>
+					<option value="100" <?if($view_num==100){?>selected<?}?>>100</option>
+					<option value="200" <?if($view_num==200){?>selected<?}?>>200</option>
+					<option value="300" <?if($view_num==300){?>selected<?}?>>300</option>
+				</select>
+			</div>
+			<?include $_SERVER["DOCUMENT_ROOT"]."/include/paging.php";?>
+			<!--
+			<div style="float:right;margin-top:-25px;margin-bottom:10px;margin-right:10px;">
+				<button type="button" class="btn btn-success" onclick="javascript:f_submit();">저장</button>
+			</div>
+			//-->
+		</div>
+
+		</form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--bottom-시작-->
+	<?include ("../include/bottom.php");?>
+<!--bottom-종료-->
+
+
+<script src="/js/common.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+<script>
+
+function f_popup_g(a1){//기본상세조회
+	var url    ="/2_custom/1_search/popup_g.php?a1="+encodeURI(a1);
+	var title  = "listpops";
+	var status = "toolbar=no,directories=no,scrollbars=yes,resizable=no,status=no,menubar=no,width=1400, height=840, top=0,left=20"; 
+	var a = window.open(url, title,status);
+	a.focus();
+}
+
+
+function f_excel(){
+	if(<?=$rows_total?>==0){
+		alert("총 0건 입니다.");
+	}else{
+		var frm    = document.ffx;
+		frm.action = "excel_down.php";
+		frm.method = "post";
+		frm.submit();
+		frm.action = "index.html";
+	}
+}
+
+function f_detail_excel(){
+	if(<?=$rows_total?>==0){
+		alert("총 0건 입니다.");
+	}else{
+		var frm    = document.ffx;
+		frm.action = "excel_detail_down.php";
+		frm.method = "post";
+		frm.submit();
+		frm.action = "index.html";
+	}
+}
+
+
+function f_submitx(){
+	document.ffx.page.value=1;
+	document.ffx.target="_self";
+	document.ffx.action = "index.html";
+	document.ffx.submit();
+}
+
+function f_submit(){
+	var v = document.ffm;
+	if(confirm("저장하시겠습니까?")){
+		var frm    = document.ffm;
+		var url    = "post.php";
+		var title  = "listpop22";
+		var status = "toolbar=no,directories=no,scrollbars=no,resizable=no,status=no,menubar=no,width=100, height=100, top=0,left=20"; 
+		var aa2 = window.open("", title,status);
+		frm.target = title;
+		frm.action = url;
+		frm.method = "post";
+		frm.submit();
+		aa2.focus();
+	}
+}
+
+$(document).ready(function(){
+
+	$("#ijp_s_date_ch").click(function(e){ 
+		if($(this).is(":checked")){
+			//alert(1);
+			$(".ijp_s_date1").prop("checked", true);
+		}else{
+			//alert(0);
+			$(".ijp_s_date1").prop("checked", false);
+		}
+	});
+	$("#ijp_s_memo_ch").click(function(e){ 
+		if($(this).is(":checked")){
+			$(".ijp_s_memo1").prop("checked", true);
+		}else{
+			$(".ijp_s_memo1").prop("checked", false);
+		}
+	});
+});
+
+</script>
+
+</body>
+</html>

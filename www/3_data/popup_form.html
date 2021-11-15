@@ -1,0 +1,18 @@
+<?	include ("../include/dbconn.php");
+	include ("../include/login_ch.php");
+	include ("../include/function.php");
+?>
+
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<?if($_REQUEST[contents]==""){?>
+<Br>오류가 없습니다.
+<?}else{?>
+<Br><?=$_REQUEST[contents]?>
+<?}?>
+
+<Br><center><button onclick="javascript:window.close();">창닫기</button></center><Br>
+
+</html>

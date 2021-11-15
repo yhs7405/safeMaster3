@@ -1,0 +1,197 @@
+<?	include ("../../include/dbconn.php");
+	include ("../../include/login_ch.php");
+	include ("../../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$h_idx = trim($_REQUEST[h_idx]);
+
+	$sql= "select * from tbl_hyunjang_info where h_idx='{$h_idx}' ";
+	//echo $sql;
+	$stmt1 = $pdo->prepare($sql);
+	$stmt1->execute();
+	$stmt1->setFetchMode(PDO::FETCH_ASSOC);
+	$row1 = $stmt1->fetch();
+
+
+	$board_dbname	=	"tbl_hyunjang_danji_info";
+
+	$s_gubun		=	trim($_REQUEST[s_gubun]);
+	$s_search		=	trim($_REQUEST[s_search]);
+
+	$list_num		=	trim($_REQUEST[list_num]);
+	$page			=	trim($_REQUEST[page]);
+	$view_num		=	trim($_REQUEST[list_num]);	//한라인에 몇개를 출력할건지//
+	$Page_List		=	10;							//링크페이지를 몇개씩 보여줄건지.. 1 / 2 / 3
+	if(!$view_num)	$view_num=	50;					//리스트 갯수
+
+	$wherequery = " where h_idx='{$h_idx}' ";
+
+	if(($s_gubun!="")&&($s_search!=""))  $wherequery.= " {$s_gubun} like '%{$s_search}%' ";
+
+	$rows_total = db_count_all($board_dbname,$wherequery);
+
+?>
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+<title>재무돌이</title>
+<?include ("../../include/common.php");?>
+</head>
+
+<body style="background-color:white;">
+
+
+<div id="content">
+
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" title="Go to Home" class="tip-bottom">기본정보</a> <a href="#" class="current">현장 단지정보</a>>  <?=$row1[h_name]?> </div>
+  </div>
+
+
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+
+        <div class="widget-box">
+          <div class="widget-content nopadding">
+
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th width="20%">No</th>
+                  <th>단지명</th>
+                </tr>
+              </thead>
+              <tbody>
+
+	<?
+	$Link_Value = "?list_num={$view_num}&s_gubun=$s_gubun&s_search=$s_search";
+	$Page_link = _Make_Link($rows_total,$view_num,$Page_List,$page,$Link_Value,$img_pp,$img_p,$img_nn,$img_n);
+
+	$sql = "select * from $board_dbname  $wherequery order by h_idx desc";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+	//echo $rows;
+
+if($rows > 0){
+		if($page) $page=1;
+		$T = 1;
+			while($row = $stmt->fetch()){?>
+
+                <tr class="odd gradeX">
+                  <td style="text-align:center;"><a href="regist.php?h_idx=<?=$h_idx?>&idx=<?=$row[idx]?>"><?=$T?></a></td>
+                  <td style="text-align:center;"><a href="regist.php?h_idx=<?=$h_idx?>&idx=<?=$row[idx]?>"><?=$row[danji_name]?></a></td>
+				</tr>
+
+	<?$T++;}
+}else{?>
+              <tr class="title">
+                <td colspan=12 align=center height=100 valign=middle><Br><Br><center>내용이 없습니다.</center></td>
+              </tr>
+<?}?>
+
+              </tbody>
+            </table>
+
+           </div>
+        </div>
+
+		&nbsp;<button type="button" class="btn btn-success" onclick="javascript:location.href='regist.php?h_idx=<?=$h_idx?>';" style="margin-top:-10px;">신규등록</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function f_new(){
+	var v = document.ff;
+	v.idx.value = "";
+	v.mode.value = "i";
+	v.jijum_code.value = "자동";
+//	v.bank_name.value = "";
+//	v.bank_alias.value = "";
+//	v.bubin_no.value = "";
+}
+
+'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>'
+
+function f_click(idx,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11){
+	var v = document.ff;
+	v.idx.value = idx;
+	v.mode.value = "e";
+
+	v.bank_code.value = p1;
+	v.jijum_code.value = p2;
+	v.jijum_name.value = p3;
+	v.saup_no.value = p4;
+	v.ceo.value = p5;
+	v.trade_code.value = p6;
+	v.trade_name.value = p7;
+	v.addr.value = p8;
+	v.upjong.value = p9;
+	v.uptae.value = p10;
+	v.etc.value = p11;
+}
+
+function f_save(){//저장하기
+	var v = document.ff;
+	if(v.mode.value==""){
+		alert("신규/수정을 선택하세요.");
+	}else if(v.jijum_name.value==""){
+		alert("지점명을 입력하세요.");
+		v.jijum_name.focus();
+	}else if(v.bank_code.value == ""){
+		alert("은행을 선택하세요.");
+		v.bank_code.focus();
+	}else if(v.saup_no.value == ""){
+		alert("사업자번호를 입력하세요.");
+		v.saup_no.focus();
+	}else if(v.ceo.value == ""){
+		alert("대표자를 입력하세요.");
+		v.ceo.focus();
+	}else if(v.trade_code.value == ""){
+		alert("거래처코드를 입력하세요.");
+		v.trade_code.focus();
+	}else if(v.trade_name.value == ""){
+		alert("거래처명을 입력하세요.");
+		v.trade_name.focus();
+	}else{
+		v.submit();
+	}
+}
+
+function f_delete(){
+	var p1 = $("#idx").val();
+	var v = document.ff;
+	if(v.idx.value==""){
+		alert("삭제 대상을 선택하세요.");
+	}else if(v.mode.value=="i"){
+		alert("삭제 대상을 선택하세요.");
+	}else{
+		if(confirm("삭제하겠습니까?")){
+			v.mode.value="d";
+			v.submit();
+		}
+	}
+}
+</script>
+
+<script src="/js/jquery.min.js"></script> 
+<script src="/js/jquery.ui.custom.js"></script> 
+<script src="/js/bootstrap.min.js"></script> 
+<script src="/js/jquery.uniform.js"></script> 
+<script src="/js/jquery.dataTables.min.js"></script> 
+<script src="/js/maruti.js"></script> 
+<script src="/js/maruti.tables.js"></script>
+
+
+</body>
+</html>

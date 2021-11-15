@@ -1,0 +1,214 @@
+<?	include ("../../include/dbconn.php");
+	include ("../../include/login_ch.php");
+	include ("../../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_bank_info";
+
+	$s_gubun		=	trim($_REQUEST[s_gubun]);
+	$s_search		=	trim($_REQUEST[s_search]);
+
+	$list_num		=	trim($_REQUEST[list_num]);
+	$page			=	trim($_REQUEST[page]);
+	$view_num		=	trim($_REQUEST[list_num]);	//한라인에 몇개를 출력할건지//
+	$Page_List		=	10;							//링크페이지를 몇개씩 보여줄건지.. 1 / 2 / 3
+	if(!$view_num)	$view_num=	50;					//리스트 갯수
+
+	$wherequery = " where 1=1  ";
+
+	if(($s_gubun!="")&&($s_search!=""))  $wherequery.= " {$s_gubun} like '%{$s_search}%' ";
+
+	$rows_total = db_count_all($board_dbname,$wherequery);
+
+?>
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+<title>재무돌이</title>
+<?include ("../../include/common.php");?>
+</head>
+
+<body>
+
+<!--header 시작-->
+	<?include ("../../include/header.php");?>
+<!--header 종료-->
+
+
+<!--top-메뉴시작-->
+	<?include ("../../include/header_menu.php");?>
+<!--top-메뉴종료-->
+
+
+<div id="content">
+
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" title="Go to Home" class="tip-bottom">기본정보</a> <a href="#" class="current">은행기본정보</a> </div>
+  </div>
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+
+        <div class="widget-box">
+          <div class="widget-content nopadding">
+
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>은행코드</th>
+                  <th>은행명</th>
+                  <th>약식명칭</th>
+                  <th>법인등록번호</th>
+                  <th>Report Version</th>
+                </tr>
+              </thead>
+              <tbody>
+
+	<?
+	$Link_Value = "?list_num={$view_num}&s_gubun=$s_gubun&s_search=$s_search";
+	$Page_link = _Make_Link($rows_total,$view_num,$Page_List,$page,$Link_Value,$img_pp,$img_p,$img_nn,$img_n);
+
+	//$sql = "select * from $board_dbname  $wherequery order by idx desc limit $Page_link[start],$view_num";
+	$sql = "select * from $board_dbname  $wherequery order by idx desc";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+	//echo $rows;
+
+	if($rows > 0){
+		if($_REQUEST[page]==""){$page=1;}else{$page=$_REQUEST[page];}
+		$T=1;
+		while($row = $stmt->fetch()){
+		
+		$orix = preg_replace("/(\')/i","^",$row[ver_name]);
+		?>
+                <tr class="odd gradeX">
+                  <td style="text-align:center;"><a href='javascript:f_click(<?=$row[idx]?>,"<?=$row[bank_code]?>","<?=$row[bank_name]?>","<?=$row[bank_alias]?>","<?=$row[bubin_no]?>","<?=$orix?>")'><?=($page-1)*$list_num+$T?></a></td>
+                  <td style="text-align:center;"><a href='javascript:f_click(<?=$row[idx]?>,"<?=$row[bank_code]?>","<?=$row[bank_name]?>","<?=$row[bank_alias]?>","<?=$row[bubin_no]?>","<?=$orix?>")'><?=$row[bank_code]?></a></td>
+                  <td style="text-align:center;"><a href='javascript:f_click(<?=$row[idx]?>,"<?=$row[bank_code]?>","<?=$row[bank_name]?>","<?=$row[bank_alias]?>","<?=$row[bubin_no]?>","<?=$orix?>")'><?=$row[bank_name]?></a></td>
+                  <td style="text-align:center;"><a href='javascript:f_click(<?=$row[idx]?>,"<?=$row[bank_code]?>","<?=$row[bank_name]?>","<?=$row[bank_alias]?>","<?=$row[bubin_no]?>","<?=$orix?>")'><?=$row[bank_alias]?></a></td>
+                  <td style="text-align:center;"><a href='javascript:f_click(<?=$row[idx]?>,"<?=$row[bank_code]?>","<?=$row[bank_name]?>","<?=$row[bank_alias]?>","<?=$row[bubin_no]?>","<?=$orix?>")'><?=$row[bubin_no]?></a></td>
+                  <td style="text-align:center;"><a href='javascript:f_click(<?=$row[idx]?>,"<?=$row[bank_code]?>","<?=$row[bank_name]?>","<?=$row[bank_alias]?>","<?=$row[bubin_no]?>","<?=$orix?>")'><?=$row[ver_name]?></a></td>
+                </tr>
+
+	<?$T++;}
+}else{?>
+              <tr class="title">
+                <td colspan=6 align=center><center>내용이 없습니다.</center></td>
+              </tr>
+<?}?>
+
+              </tbody>
+            </table>
+
+           </div>
+        </div>
+
+<?if($_SESSION["admin_permission"][ch_952]=="y"){?>
+			<form name=ff method=post action="post.php">
+            <table class="table table-bordered table-striped">
+              <thead>
+				<input type=hidden name="idx" value="idx">
+				<input type=hidden name="mode" value="mode">
+                  <th>은행코드 <input type="text" name="bank_code" id="bank_code" readonly size=4></th>
+                  <th>은행명 <input type="text" name="bank_name" id="bank_name"></th>
+                  <th>약식명칭 <input type="text" name="bank_alias" id="bank_alias"></th>
+                  <th>법인등록번호 <input type="text" name="bubin_no" id="bubin_no"></th>
+                  <th>Report Version <input type="text" name="ver_name" id="ver_name"></th>
+                </tr>
+              </thead>
+			</table>
+			</form>
+
+			<div style="text-align:center;" >
+				<button type="submit" class="btn btn-save" onclick="javascript:f_new();">신규</button>&nbsp;&nbsp;&nbsp;&nbsp;
+				<button type="submit" class="btn btn-success" onclick="javascript:f_save();">저장</button>&nbsp;&nbsp;&nbsp;&nbsp;
+				<button type="submit" class="btn btn-success" onclick="javascript:f_delete();">삭제</button>&nbsp;&nbsp;&nbsp;&nbsp;
+			</div>
+			<br>
+<?}?>
+
+    </div>
+  </div>
+</div>
+
+<!--bottom-시작-->
+	<?include ("../../include/bottom.php");?>
+<!--bottom-종료-->
+
+<script>
+function f_new(){
+	var v = document.ff;
+	v.idx.value = "";
+	v.mode.value = "i";
+	v.bank_code.value = "자동";
+	v.bank_name.value = "";
+	v.bank_alias.value = "";
+	v.bubin_no.value = "";
+	v.ver_name.value = "";
+}
+
+function f_click(idx,p1,p2,p3,p4,p5){
+	var v = document.ff;
+	v.idx.value = idx;
+	v.mode.value = "e";
+	v.bank_code.value = p1;
+	v.bank_name.value = p2;
+	v.bank_alias.value = p3;
+	v.bubin_no.value = p4;
+	p5 = p5.replace("^", "\'" );
+	v.ver_name.value = p5;
+}
+
+function f_save(){//저장하기
+	var v = document.ff;
+	if(v.mode.value==""){
+		alert("신규/수정을 선택하세요.");
+	}else if(v.bank_name.value==""){
+		alert("은행명을 입력하세요.");
+		v.bank_name.focus();
+	}else if(v.bank_alias.value == ""){
+		alert("약식명칭를 입력하세요.");
+		v.bank_alias.focus();
+	}else if(v.bubin_no.value == ""){
+		alert("법인등록번호를 입력하세요.");
+		v.bubin_no.focus();
+	}else{
+		v.submit();
+	}
+}
+
+function f_delete(){
+	var p1 = $("#idx").val();
+	var v = document.ff;
+	if(v.idx.value==""){
+		alert("삭제 대상을 선택하세요.");
+	}else if(v.mode.value=="i"){
+		alert("삭제 대상을 선택하세요.");
+	}else{
+		if(confirm("삭제하겠습니까?")){
+			v.mode.value="d";
+			v.submit();
+		}
+	}
+}
+</script>
+
+<script src="/js/jquery.min.js"></script> 
+<script src="/js/jquery.ui.custom.js"></script> 
+<script src="/js/bootstrap.min.js"></script> 
+<script src="/js/jquery.uniform.js"></script> 
+<script src="/js/jquery.dataTables.min.js"></script> 
+<script src="/js/maruti.js"></script> 
+<script src="/js/maruti.tables.js"></script>
+
+
+</body>
+</html>

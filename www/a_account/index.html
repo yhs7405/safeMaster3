@@ -1,0 +1,205 @@
+<?	include ("../include/dbconn.php");
+	include ("../include/login_ch.php");
+	include ("../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_user";
+
+	$id			=	trim($_REQUEST[id]);
+	$name		=	trim($_REQUEST[name]);
+	$sosok		=	trim($_REQUEST[sosok]);
+	$grade		=	trim($_REQUEST[grade]);
+
+	$view_num		=	trim($_REQUEST[view_num]);	//한라인에 몇개를 출력할건지//
+	if($_REQUEST[page]==""){$page=1;}else{$page=$_REQUEST[page];}
+	$Page_List		=	10;							//링크페이지를 몇개씩 보여줄건지.. 1 / 2 / 3
+	if(!$view_num)	$view_num=	50;					//리스트 갯수
+
+	$wherequery = " where 1=1  ";
+	if($id!="")  $wherequery.= " and id like '%{$id}%' ";
+	if($name!="")  $wherequery.= " and name like '%{$name}%' ";
+	if($sosok!="")  $wherequery.= " and sosok='{$sosok}' ";
+	if($grade!="")  $wherequery.= " and grade='{$grade}' ";
+
+	$rows_total = db_count_all($board_dbname,$wherequery);
+
+?>
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+<title>재무돌이</title>
+<?include ("../include/common.php");?>
+</head>
+
+<body>
+
+<!--header 시작-->
+	<?include ("../include/header.php");?>
+<!--header 종료-->
+
+
+<!--top-메뉴시작-->
+	<?include ("../include/header_menu.php");?>
+<!--top-메뉴종료-->
+
+
+<div id="content">
+
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" title="Go to Home" class="tip-bottom">계정관리</a> <a href="#" class="current">계정목록</a> </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+
+
+			<div  style="width:100%;background-color:#EFEFEF;border-top:1px solid #e7e7e7;border-left:1px solid #e7e7e7;border-right:1px solid #e7e7e7;">
+			<form name=ffx method=post>
+				<input type=hidden name="view_num"  id="view_num"  value="<?=$view_num?>">
+				<input type=hidden name="page"  id="page"  value="<?=$page?>">
+			<center>
+			<table style="background-color:#EFEFEF;">
+			  <thead>
+				<tr>
+				  <th style="text-align:center;margin-top:20px;" valign="top">
+
+					&nbsp;&nbsp;&nbsp;&nbsp;아이디&nbsp;<input type="text" name="id" id="id" placeholder="아이디" maxlength=12 value="<?=$id?>" style="margin-top:7px;">
+					&nbsp;&nbsp;&nbsp;&nbsp;이름&nbsp;<input type="text"  name="name" id="name" placeholder="이름"  maxlength=40  value="<?=$row[name]?>"  value="<?=$name?>"  style="margin-top:7px;"/>
+					&nbsp;&nbsp;&nbsp;&nbsp;소속&nbsp;
+					<select name="sosok" id="sosok"  style="margin-top:7px;">
+						<option value="">--선택--</option>
+						<?$sql = "select * from tbl_sosok";
+						$sosok_r = $pdo->prepare($sql);
+						$sosok_r->execute();
+						while($rr = $sosok_r->fetch()){?>
+							<option value="<?=$rr[sosok_code]?>" <?if($rr[sosok_code]==$sosok){?>selected<?}?>><?=$rr[sosok_name]?></option>
+						<?}?>
+					</select>&nbsp;&nbsp;&nbsp;
+					등급&nbsp;<select name=grade  style="margin-top:7px;">
+						<option value="">--선택--</option>
+						<option value="100" <?if($grade=="100"){?>selected<?}?>>일반</option>
+						<option value="200" <?if($grade=="200"){?>selected<?}?>>관리자</option>
+						<option value="300" <?if($grade=="300"){?>selected<?}?>>외주</option>
+						<option value="999" <?if($grade=="999"){?>selected<?}?>>퇴사</option>
+					</select>
+					  &nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-success" onclick="javascript:f_submitx();" style="background-color:#4374D9;height:30px;width:60px;margin-top:-2px;">조회</button>
+
+
+				  </th>
+				</tr>
+			  </thead>
+			</table>
+			</center>
+			</form>
+			</div>
+
+        <div class="widget-box">
+
+		<form name=ffm method=post>
+          <div class="widget-content nopadding">
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>아이디</th>
+                  <th>이름</th>
+                  <th>소속</th>
+                  <th>이메일</th>
+                  <th>등급</th>
+                </tr>
+              </thead>
+              <tbody>
+
+	<?
+	$Link_Value = "?list_num={$view_num}&s_gubun=$s_gubun&s_search=$s_search";
+	$Page_link = _Make_Link($rows_total,$view_num,$Page_List,$page,$Link_Value,$img_pp,$img_p,$img_nn,$img_n);
+
+	$sql = "select * from $board_dbname  $wherequery order by idx desc limit $Page_link[start],$view_num";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	if($rows > 0){
+		$T=1;
+		while($row = $stmt->fetch()){?>
+
+                <tr class="odd gradeX">
+                  <td style="text-align:center;"><a href="regist.php?idx=<?=$row[idx]?>"><?=($page-1)*$view_num+$T?></a></td>
+                  <td style="text-align:center;"><a href="regist.php?idx=<?=$row[idx]?>"><?=$row[id]?></a></td>
+                  <td style="text-align:center;"><a href="regist.php?idx=<?=$row[idx]?>"><?=$row[name]?></a></td>
+                  <td style="text-align:center;"><a href="regist.php?idx=<?=$row[idx]?>"><?=f_sosok($row[sosok])?></a></td>
+                  <td style="text-align:center;"><a href="regist.php?idx=<?=$row[idx]?>"><?=$row[email]?></a></td>
+                  <td style="text-align:center;"><a href="regist.php?idx=<?=$row[idx]?>"><?=f_grade($row[grade])?></a></td>
+                </tr>
+
+	<?$T++;}
+}else{?>
+              <tr class="title">
+                <td colspan=4 align=center>내용이 없습니다.</td>
+              </tr>
+<?}?>
+
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+		<div class="fg-toolbar ui-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix" style="height:30px;">
+			<div class="dataTables_filter" id="DataTables_Table_0_filter"><label  style="float:left;">페이지당 </label>&nbsp;<select name="view_num" style="width:80px;" onchange="javascript:f_movex(this);">
+					<option selected="selected" value="10" <?if($view_num==10){?>selected<?}?>>10</option>
+					<option value="15" <?if($view_num==15){?>selected<?}?>>15</option>
+					<option value="20" <?if($view_num==20){?>selected<?}?>>20</option>
+					<option value="30" <?if($view_num==30){?>selected<?}?>>30</option>
+					<option value="30" <?if($view_num==50){?>selected<?}?>>50</option>
+					<option value="100" <?if($view_num==100){?>selected<?}?>>100</option>
+					<option value="200" <?if($view_num==200){?>selected<?}?>>200</option>
+					<option value="300" <?if($view_num==300){?>selected<?}?>>300</option>
+				</select>
+			</div>
+
+			<?include $_SERVER["DOCUMENT_ROOT"]."/include/paging.php";?>
+
+		</div>
+
+      </div>
+	  </form>
+    </div>
+  </div>
+</div>
+
+<!--bottom-시작-->
+	<?include ("../include/bottom.php");?>
+<!--bottom-종료-->
+
+<script src="/js/common.js"></script> 
+<script src="/js/jquery.min.js"></script> 
+<script src="/js/jquery.ui.custom.js"></script> 
+<script src="/js/bootstrap.min.js"></script> 
+<script src="/js/jquery.uniform.js"></script> 
+<script src="/js/jquery.dataTables.min.js"></script> 
+<script src="/js/maruti.js"></script> 
+<script src="/js/maruti.tables.js"></script>
+
+</body>
+
+
+<script>
+function f_submitx(){
+	document.ffx.page.value=1;
+	var v = document.ffx;
+	v.submit();
+}
+</script>
+
+
+
+</html>

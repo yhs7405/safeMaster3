@@ -1,0 +1,329 @@
+<?	include ("../../include/dbconn.php");
+	include ("../../include/login_ch.php");
+	include ("../../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_bank_jijum";
+
+	$bank_code		=	trim($_REQUEST[bank_code]);
+	$jijum_name		=	trim($_REQUEST[jijum_name]);
+
+	$view_num		=	trim($_REQUEST[view_num]);	//한라인에 몇개를 출력할건지//
+	if($_REQUEST[page]==""){$page=1;}else{$page=$_REQUEST[page];}
+	$Page_List		=	10;							//링크페이지를 몇개씩 보여줄건지.. 1 / 2 / 3
+	if(!$view_num)	$view_num=	20;					//리스트 갯수
+
+
+	$wherequery = " where 1=1  ";
+
+	if($bank_code!="")  $wherequery.= " and bank_code='{$bank_code}' ";
+	if($jijum_name!="")  $wherequery.= " and jijum_name like '%{$jijum_name}%' ";
+
+	$rows_total = db_count_all($board_dbname,$wherequery);
+
+?>
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+<title>재무돌이</title>
+<?include ("../../include/common.php");?>
+</head>
+
+<body>
+
+<!--header 시작-->
+	<?include ("../../include/header.php");?>
+<!--header 종료-->
+
+
+<!--top-메뉴시작-->
+	<?include ("../../include/header_menu.php");?>
+<!--top-메뉴종료-->
+
+
+<div id="content">
+
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" title="Go to Home" class="tip-bottom">기본정보</a> <a href="#" class="current">은행지점정보</a> </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+
+        <div class="widget-box">
+          <div class="widget-content nopadding">
+
+			<div  style="width:100%;background-color:#EFEFEF;border-top:1px solid #e7e7e7;border-left:1px solid #e7e7e7;border-right:1px solid #e7e7e7;">
+			<form name=ffx method=post>
+				<input type=hidden name="view_num"  id="view_num"  value="<?=$view_num?>">
+				<input type=hidden name="page"  id="page"  value="<?=$page?>">
+			<center>
+			<table style="background-color:#EFEFEF;">
+			  <thead>
+				<tr>
+				  <th style="text-align:center;margin-top:20px;" valign="top">
+
+					은행&nbsp;<select name="bank_code" id="bank_code" style="margin-top:7px;">
+							<option value="">--은행--</option>
+						<?
+						$sql = "select * from tbl_bank_info ";
+						$sosok_r = $pdo->prepare($sql);
+						$sosok_r->execute();
+						while($rr = $sosok_r->fetch()){?>
+							<option value="<?=$rr[bank_code]?>" <?if($rr[bank_code]==$bank_code){?>selected<?}?>><?=$rr[bank_name]?></option>
+						<?}?>
+					</select>&nbsp;&nbsp;&nbsp;
+					지점&nbsp;<input type=text name="jijum_name" value="<?=$jijum_name?>" style="width:150px;margin-top:7px;">
+					  &nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-success" onclick="javascript:f_submitx();" style="background-color:#4374D9;height:30px;width:60px;margin-top:-2px;">조회</button>
+
+
+				  </th>
+				</tr>
+			  </thead>
+			</table>
+			</center>
+			</form>
+			</div>
+
+
+        <div class="widget-box">
+          <div class="widget-content nopadding">
+
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>지점코드</th>
+                  <th>은행명</th>
+                  <th>지점명</th>
+                  <th>사업자등록번호</th>
+                  <th>대표자</th>
+                  <th>거래처코드</th>
+                  <th>거래처명</th>
+                  <th>주소</th>
+                  <th>업태</th>
+                  <th>업종</th>
+                  <th>특이사항</th>
+                </tr>
+              </thead>
+              <tbody>
+
+	<?
+	$Link_Value = "?list_num={$view_num}&s_gubun=$s_gubun&s_search=$s_search";
+	$Page_link = _Make_Link($rows_total,$view_num,$Page_List,$page,$Link_Value,$img_pp,$img_p,$img_nn,$img_n);
+
+	$sql = "select * from $board_dbname  $wherequery order by idx desc limit $Page_link[start],$view_num";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+	//echo $rows;
+
+	if($rows > 0){
+		if($_REQUEST[page]==""){$page=1;}else{$page=$_REQUEST[page];}
+		$T=1;
+		while($row = $stmt->fetch()){?>
+
+                <tr class="odd gradeX">
+                  <td style="text-align:center;"><a href="javascript:f_click(<?=$row[idx]?>,'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>')"><?=($page-1)*$list_num+$T?></a></td>
+                  <td style="text-align:center;"><a href="javascript:f_click(<?=$row[idx]?>,'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>')"><?=$row[jijum_code]?></a></td>
+                  <td style="text-align:center;"><a href="javascript:f_click(<?=$row[idx]?>,'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>')"><?=f_bank_code_name($row[bank_code])?></a></td>
+                  <td style="text-align:center;"><a href="javascript:f_click(<?=$row[idx]?>,'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>')"><?=$row[jijum_name]?></a></td>
+                  <td style="text-align:center;"><a href="javascript:f_click(<?=$row[idx]?>,'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>')"><?=$row[saup_no]?></a></td>
+                  <td style="text-align:center;"><a href="javascript:f_click(<?=$row[idx]?>,'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>')"><?=$row[ceo]?></a></td>
+                  <td style="text-align:center;"><a href="javascript:f_click(<?=$row[idx]?>,'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>')"><?=$row[trade_code]?></a></td>
+                  <td style="text-align:center;"><a href="javascript:f_click(<?=$row[idx]?>,'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>')"><?=$row[trade_name]?></a></td>
+                  <td style="text-align:center;"><a href="javascript:f_click(<?=$row[idx]?>,'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>')"><?=$row[addr]?></a></td>
+
+                  <td style="text-align:center;"><a href="javascript:f_click(<?=$row[idx]?>,'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>')"><?=$row[uptae]?></a></td>
+
+
+                  <td style="text-align:center;"><a href="javascript:f_click(<?=$row[idx]?>,'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>')"><?=$row[upjong]?></a></td>
+
+                  <td style="text-align:center;"><a href="javascript:f_click(<?=$row[idx]?>,'<?=$row[bank_code]?>','<?=$row[jijum_code]?>','<?=$row[jijum_name]?>','<?=$row[saup_no]?>','<?=$row[ceo]?>','<?=$row[trade_code]?>','<?=$row[trade_name]?>','<?=$row[addr]?>','<?=$row[upjong]?>','<?=$row[uptae]?>','<?=$row[etc]?>')"><?=$row[etc]?></a></td>
+				</tr>
+
+	<?$T++;}
+}else{?>
+              <tr class="title">
+                <td colspan=12 align=center height=100 valign=middle><Br><Br><center>내용이 없습니다.</center></td>
+              </tr>
+<?}?>
+
+              </tbody>
+            </table>
+
+           </div>
+        </div>
+
+
+
+			<div class="fg-toolbar ui-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix" style="height:30px;">
+				<div class="dataTables_filter" id="DataTables_Table_0_filter"><label  style="float:left;">페이지당 </label>&nbsp;<select name="view_num" style="width:80px;" onchange="javascript:f_movex(this);">
+						<option selected="selected" value="10" <?if($view_num==10){?>selected<?}?>>10</option>
+						<option value="15" <?if($view_num==15){?>selected<?}?>>15</option>
+						<option value="20" <?if($view_num==20){?>selected<?}?>>20</option>
+						<option value="30" <?if($view_num==30){?>selected<?}?>>30</option>
+						<option value="50" <?if($view_num==50){?>selected<?}?>>50</option>
+						<option value="100" <?if($view_num==100){?>selected<?}?>>100</option>
+						<option value="200" <?if($view_num==200){?>selected<?}?>>200</option>
+						<option value="300" <?if($view_num==300){?>selected<?}?>>300</option>
+					</select>
+				</div>
+				<?include $_SERVER["DOCUMENT_ROOT"]."/include/paging.php";?>
+			</div>
+			<br>
+
+
+<?if($_SESSION["admin_permission"][ch_962]=="y"){?>
+			<form name=ff method=post action="post.php">
+				<input type=hidden name=idx id=idx>
+				<input type=hidden name=mode id=mode>
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>&nbsp;* 지점코드 &nbsp;&nbsp;&nbsp;<input type="text" name="jijum_code" readonly size=4></th>
+                  <th>&nbsp;* 은행명 &nbsp;&nbsp;&nbsp;<select name="bank_code" id="bank_code">
+						<option value="">--은행선택--</option>
+						<?$sql = "select * from tbl_bank_info";
+						$bank_r = $pdo->prepare($sql);
+						$bank_r->execute();
+						while($rr = $bank_r->fetch()){?>
+							<option value="<?=$rr[bank_code]?>" <?if($rr[bank_code]==$row[bank_code]){?>selected<?}?>><?=$rr[bank_name]?></option>
+						<?}?>
+					</select></th>
+                  <th>&nbsp;* 지점명&nbsp;&nbsp;<input type="text" name="jijum_name" ></th>
+                  <th>* 사업자등록번호 <input type="text" name="saup_no"></th>
+                  <th>* 대표자 <input type="text" name="ceo"></th>
+                </tr>
+                <tr>
+                  <th>* 거래처코드&nbsp;&nbsp;<input type="text" name="trade_code"></th>
+                  <th>* 거래처명&nbsp;&nbsp;<input type="text" name="trade_name"></th>
+                  <th>&nbsp;&nbsp;&nbsp;업&nbsp;&nbsp;&nbsp;종&nbsp;&nbsp;&nbsp;<input type="text" name="upjong"></th>
+                  <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;업&nbsp;&nbsp;&nbsp;태&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="uptae"></th>
+                  <th></th>
+                </tr>
+                <tr>
+                  <th colspan=5>&nbsp;&nbsp;&nbsp;주&nbsp;&nbsp;소&nbsp;&nbsp;&nbsp;<input type="text" name="addr" style="width:80%;"></th>
+                </tr>
+                <tr>
+                  <th colspan=5>특이사항 <input type="text" name="etc" style="width:80%;"></th>
+                </tr>
+              </thead>
+			</table>
+			</form>
+
+			<div style="text-align:center;" >
+				<button type="submit" class="btn btn-save" onclick="javascript:f_new();">신규</button>&nbsp;&nbsp;&nbsp;&nbsp;
+				<button type="submit" class="btn btn-success" onclick="javascript:f_save();">저장</button>&nbsp;&nbsp;&nbsp;&nbsp;
+				<button type="submit" class="btn btn-success" onclick="javascript:f_delete();">삭제</button>&nbsp;&nbsp;&nbsp;&nbsp;
+			</div>
+			<br>
+<?}?>
+
+    </div>
+  </div>
+</div>
+
+<!--bottom-시작-->
+	<?include ("../../include/bottom.php");?>
+<!--bottom-종료-->
+
+
+<script src="/js/common.js"></script>
+
+<script>
+function f_submitx(){
+	var v = document.ffx;
+	v.submit();
+}
+
+function f_new(){
+	var v = document.ff;
+	v.idx.value = "";
+	v.mode.value = "i";
+	v.jijum_code.value = "자동";
+//	v.bank_name.value = "";
+//	v.bank_alias.value = "";
+//	v.bubin_no.value = "";
+}
+
+
+function f_click(idx,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11){
+	var v = document.ff;
+	v.idx.value = idx;
+	v.mode.value = "e";
+
+	v.bank_code.value = p1;
+	v.jijum_code.value = p2;
+	v.jijum_name.value = p3;
+	v.saup_no.value = p4;
+	v.ceo.value = p5;
+	v.trade_code.value = p6;
+	v.trade_name.value = p7;
+	v.addr.value = p8;
+	v.upjong.value = p9;
+	v.uptae.value = p10;
+	v.etc.value = p11;
+}
+
+function f_save(){//저장하기
+	var v = document.ff;
+	if(v.mode.value==""){
+		alert("신규/수정을 선택하세요.");
+	}else if(v.jijum_name.value==""){
+		alert("지점명을 입력하세요.");
+		v.jijum_name.focus();
+	}else if(v.bank_code.value == ""){
+		alert("은행을 선택하세요.");
+		v.bank_code.focus();
+	}else if(v.saup_no.value == ""){
+		alert("사업자번호를 입력하세요.");
+		v.saup_no.focus();
+	}else if(v.ceo.value == ""){
+		alert("대표자를 입력하세요.");
+		v.ceo.focus();
+	}else if(v.trade_code.value == ""){
+		alert("거래처코드를 입력하세요.");
+		v.trade_code.focus();
+	}else if(v.trade_name.value == ""){
+		alert("거래처명을 입력하세요.");
+		v.trade_name.focus();
+	}else{
+		v.submit();
+	}
+}
+
+function f_delete(){
+	var p1 = $("#idx").val();
+	var v = document.ff;
+	if(v.idx.value==""){
+		alert("삭제 대상을 선택하세요.");
+	}else if(v.mode.value=="i"){
+		alert("삭제 대상을 선택하세요.");
+	}else{
+		if(confirm("삭제하겠습니까?")){
+			v.mode.value="d";
+			v.submit();
+		}
+	}
+}
+</script>
+
+<script src="/js/jquery.min.js"></script> 
+<script src="/js/jquery.ui.custom.js"></script> 
+<script src="/js/bootstrap.min.js"></script> 
+<script src="/js/jquery.uniform.js"></script> 
+<script src="/js/jquery.dataTables.min.js"></script> 
+<script src="/js/maruti.js"></script> 
+<script src="/js/maruti.tables.js"></script>
+
+
+</body>
+</html>

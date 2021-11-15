@@ -1,0 +1,32 @@
+<!--Header-part-->
+<div id="header">
+  <h1><a href="/main.php">CS돌이v1.0</a></h1>
+</div>
+<!--close-Header-part-->
+
+<!--top-Header-messaages-->
+<div class="btn-group rightzero">
+	<a class="top_message tip-left" title="Manage Files"><i class="icon-file"></i>a</a>
+	<a class="top_message tip-bottom" title="Manage Users"><i class="icon-user"></i>2</a>
+	<a class="top_message tip-bottom" title="Manage Comments"><i class="icon-comment"></i>3<span class="label label-important"></span></a> 
+	<a class="top_message tip-bottom" title="Manage Orders"><i class="icon-shopping-cart"></i>4</a>
+</div>
+<!--close-top-Header-messaages--> 
+
+<?php
+$http_host = $_SERVER['HTTP_HOST'];
+$request_uri = $_SERVER['REQUEST_URI'];
+$url = 'http://' . $http_host . $request_uri;
+?>
+
+<!--top-Header-menu-->
+<div id="user-nav" class="navbar navbar-inverse">
+  <ul class="nav">
+    <li class=""><a title="" href="#"><span class="text" style="color:white;">작업자 : <?=$_SESSION["admin_name"]?></span></a></li>
+    <li class=""><a title="" href="/logout.php"><span class="text"  style="color:white;">로그아웃</span></a></li>
+    <li class=""><a title="" href="<?=$url?>" target="_blank"  style="color:white;">새창띄우기</a></li>
+<!--    <li class=""><a title="" href="<?=$url?>" target="_blank"><i class="icon icon-share-alt"></i>새창띄우기</a></li>//-->
+    <li class="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+  </ul>
+</div>
+<!--close-top-Header-menu-->

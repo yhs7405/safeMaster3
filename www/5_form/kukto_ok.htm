@@ -1,0 +1,61 @@
+<?	include ("../include/dbconn.php");
+	include ("../include/login_ch.php");
+	include ("../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_suljung";
+
+	$chx	=	$_POST[ch];
+
+	$wherequery = " where 1=1 ";
+
+	$chxm = implode( ',', $chx);
+
+	$wherequery.= " and idx in ({$chxm}) "; 
+
+	$datex = date("YmdHis");
+	$sql = "update tbl_suljung set suljung_update='{$datex}'  where idx in ({$chxm}) ";
+	//echo $sql;
+	db_query($sql);  //최신날짜 갱신
+
+
+	$sql = "select * from $board_dbname  $wherequery  ";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	while($row = $stmt->fetch()){
+
+		$datex = date("Ymd");
+		$sql = "update tbl_suljung set gukto='gukto',sg_b_date='' where idx = '{$row[idx]}'";  //국토설정시 세금계산서발행일공백으로
+		db_query($sql);
+
+		//설정 보수액/공과금 갱신
+		$KEY1 = array();
+		$ff = f_suljung_bosu2($row["a1"],	$row[suljung_no],"");
+		$KEY1[bosu_price] = $ff[fee];
+		$KEY1[bosu_price_vat] = $ff[vat];
+
+		$KEY1[gongga_price] =  f_suljung_gongga2($row["a1"],$row[suljung_no],"");
+
+		$updatewhere = " WHERE idx = '{$row[idx]}'";
+		db_replace($KEY1,tbl_suljung,$updatewhere,"idx");
+
+	}
+	
+	echo "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>";
+	echo "<html>";
+	echo "<body>";
+	echo "<center>";
+	echo "<br>";
+	echo "<input type=button value=' 처리 완료! ' onclick='javascript:opener.document.ffx.submit();;window.close();'>";
+	echo "</center>";
+	echo "</body>";
+	echo "</html>";
+	exit;
+
+	?>

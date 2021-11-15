@@ -1,0 +1,534 @@
+<?	include ("../../include/dbconn.php");
+	include ("../../include/login_ch.php");
+	include ("../../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_junib";
+
+	$h_idx				=	trim($_REQUEST[h_idx]);
+	$target_date		=	trim($_REQUEST[target_date]);
+	$confirm_date		=	trim($_REQUEST[confirm_date]);
+	$s_date				=	trim($_REQUEST[s_date]);
+	$e_date				=	trim($_REQUEST[e_date]);
+	$damdang_id			=	trim($_REQUEST[damdang_id]);
+	$sou_relation		=	trim($_REQUEST[sou_relation]);
+	$bank_null_ch		=	trim($_REQUEST[bank_null_ch]);
+	$bank_code			=	trim($_REQUEST[bank_code]);
+	$jijum_code			=	trim($_REQUEST[jijum_code]);
+	$review_confirm		=	trim($_REQUEST[review_confirm]);
+	$daesang			=	trim($_REQUEST[daesang]);
+	$j1					=	trim($_REQUEST[j1]);
+	$memo				=	trim($_REQUEST[memo]);
+
+	$list_num		=	trim($_REQUEST[list_num]);
+	$page			=	trim($_REQUEST[page]);
+	$view_num		=	trim($_REQUEST[list_num]);	//한라인에 몇개를 출력할건지//
+	$Page_List		=	10;							//링크페이지를 몇개씩 보여줄건지.. 1 / 2 / 3
+	if(!$view_num)	$view_num=	20;					//리스트 갯수
+
+	$wherequery = " where 1=1 ";
+
+	if($h_idx!="")			$wherequery.= " and h_idx = ".$h_idx." ";
+	if($damdang_id!="")		$wherequery.= " and damdang_id = '".$damdang_id."' ";
+	if($sou_relation!=""){
+		if($sou_relation!="000"){
+			$wherequery.= " and sou_relation = '".$sou_relation."' ";
+		} else {
+			$wherequery.= " and sou_relation in ('100','200','300','400') ";
+		}
+	}	
+	if($bank_null_ch=="Y"){
+		$wherequery.= " and d1 <> '' ";
+	} else {
+		if($bank_code!="")		$wherequery.= " and d1 = '".$bank_code."' ";
+		if($jijum_code!="")		$wherequery.= " and e1 = '".$jijum_code."' ";
+	}
+	if($review_confirm!=""){
+		if($review_confirm!="000"){
+			$wherequery.= " and review_confirm = '".$review_confirm."' ";
+		} else {
+			$wherequery.= " and review_confirm in ('100','200','300','400') ";
+		}
+	}	
+	if($j1!="")			$wherequery.= " and (j1 like '%{$j1}%' or m1 like '%{$j1}%')";
+	//$memo				=	trim($_REQUEST[memo]);
+
+	if($daesang=="1") $wherequery.= " and (junib_request_date='' or junib_request_date is null) ";  //전입의뢰일자가 없음
+	if($daesang=="2") $wherequery.= " and (junib_s_date='' or junib_s_date is null)";                //전입수령일자가 없음
+	if($daesang=="3") $wherequery.= " and (review_request_date='' or review_request_date is null)"; //재열람의뢰일자가 없음
+	if($daesang=="4") $wherequery.= " and (review_s_date='' or review_s_date is null)";             //전입수령일자가 없음
+
+	if($target_date!=""){
+		if($target_date=="100") {
+			$imsi = " and junib_update in (SELECT max(junib_update) FROM tbl_junib where junib_update<>'' GROUP BY junib_update ORDER BY junib_update DESC)";
+			$wherequery.=$imsi;
+		}else if(($s_date!="")&&($e_date!="")){
+			$imsi = "";
+			if($target_date=="1") {$imsi = " and g1 between ";$tt = "접수일";}
+			if($target_date=="2") {$imsi = " and junib_request_date between ";$tt = "전입의뢰일";}
+			if($target_date=="3") {$imsi = " and junib_s_date between ";$tt = "전입수령일";}
+			if($target_date=="4") {$imsi = " and review_request_date between ";$tt = "재열람의뢰일";}
+			if($target_date=="5") {$imsi = " and review_s_date between ";$tt = "전입수령일";}
+			if($s_date==$e_date) {$imsi.= " {$s_date} and {$e_date} ";}
+			if($s_date!=$e_date) {$imsi.= " {$s_date} and {$e_date} ";}
+			$wherequery.=$imsi;
+		}
+	}
+
+	if($memo!=""){
+		$wherequery.= " and (a1 in ( (select a1 from tbl_junib where (memo like '%{$memo}%') or (ijp_s_memo  like '%{$memo}%') ";
+		$wherequery.= "      or (sjp_s_memo  like '%{$memo}%') or (ijp_j_memo  like '%{$memo}%') ";
+		$wherequery.= "      or (sjp_j_memo  like '%{$memo}%') or (ijj_w_memo  like '%{$memo}%') ";
+		$wherequery.= "      or (sjj_w_memo  like '%{$memo}%') or (ijp_b_memo  like '%{$memo}%') ";
+		$wherequery.= "      or (sjp_b_memo  like '%{$memo}%') or (refund_memo  like '%{$memo}%') ";
+		$wherequery.= "      or (refund_end_memo like '%{$memo}%') or (refund_memo  like '%{$memo}%')))  or ";
+		$wherequery.= "      a1 in (select a1 from tbl_sugum where sugum_memo like '%{$memo}%') )";
+	}
+
+	//echo "<br>";
+	//print_r($_REQUEST);
+	//echo "<br>{$wherequery}";
+
+	$rows_total = db_count_all($board_dbname,$wherequery);
+?>
+
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<meta name=ProgId content=Excel.Sheet>
+<meta name=Generator content="Microsoft Excel 15">
+<link rel=File-List href="전입세대의뢰및수령리스트항목.files/filelist.xml">
+<script src="/js/jquery.min.js"></script>
+
+<style id="Report_자료_20190405_11996_Styles">
+<!--table
+	{mso-displayed-decimal-separator:"\.";
+	mso-displayed-thousand-separator:"\,";}
+.font511996
+	{color:windowtext;
+	font-size:8.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;}
+.xl6311996
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:6.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:middle;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl6411996
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:6.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-number-format:General;
+	text-align:right;
+	vertical-align:middle;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl6511996
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:6.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-number-format:General;
+	text-align:center;
+	vertical-align:middle;
+	border:.5pt solid windowtext;
+	background:#D9D9D9;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl6611996
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:6.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-number-format:General;
+	text-align:center;
+	vertical-align:middle;
+	border:.5pt solid windowtext;
+	background:#D9D9D9;
+	mso-pattern:black none;
+	white-space:normal;}
+.xl6711996
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:6.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-number-format:General;
+	text-align:center;
+	vertical-align:middle;
+	border:.5pt solid windowtext;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+
+.xl671199611
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:6.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-number-format:General;
+	text-align:center;
+	vertical-align:middle;
+	border:.5pt solid windowtext;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+
+.xl6811996
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:6.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-number-format:"Short Date";
+	text-align:center;
+	vertical-align:middle;
+	border:.5pt solid windowtext;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl6911996
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:9.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-number-format:General;
+	text-align:center;
+	vertical-align:middle;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl7011996
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:9.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-number-format:"Short Date";
+	text-align:center;
+	vertical-align:middle;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl7111996
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:14.0pt;
+	font-weight:700;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-number-format:General;
+	text-align:center;
+	vertical-align:middle;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+ruby
+	{ruby-align:left;}
+rt
+	{color:windowtext;
+	font-size:8.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-char-type:none;}
+-->
+</style>
+</head>
+
+<body>
+
+<object id=factory style="display:none" 
+    classid="clsid:1663ed61-23eb-11d2-b92f-008048fdd814" 
+    codebase="/js/smsx.cab">
+</object> 
+
+<div id="Report_자료_20190405_11996" align=center x:publishsource="Excel">
+
+<table border=0 cellpadding=0 cellspacing=0 width=639 class=xl6553511996
+ style='border-collapse:collapse;table-layout:fixed;width:480pt'>
+
+ <col class=xl6553511996 width=28 style='mso-width-source:userset;mso-width-alt: 896;width:21pt'>
+ <col class=xl655351199611 width=130 style='mso-width-source:userset;mso-width-alt: 2624;width:120pt'>
+ <col class=xl6553511996 width=51 style='mso-width-source:userset;mso-width-alt: 1632;width:38pt'>
+ <col class=xl6553511996 width=50 style='mso-width-source:userset;mso-width-alt: 1600;width:38pt'>
+ <col class=xl6553511996 width=99 style='mso-width-source:userset;mso-width-alt: 3168;width:74pt'>
+ <col class=xl6553511996 width=48 span=2 style='mso-width-source:userset; mso-width-alt:1536;width:36pt'>
+ <col class=xl6553511996 width=99 style='mso-width-source:userset;mso-width-alt: 3168;width:74pt'>
+ <col class=xl6553511996 width=94 style='mso-width-source:userset;mso-width-alt: 3008;width:71pt'>
+ <col class=xl6553511996 width=40 style='mso-width-source:userset;mso-width-alt: 1280;width:30pt'>
+
+ <tr height=27 style='height:20.25pt'>
+  <td colspan=10 height=27 class=xl7111996 width=639 style='height:20.25pt;
+  width:480pt'>전입세대 의뢰 및 수령리스트</td>
+ </tr>
+ <tr height=22 style='height:16.5pt'>
+  <td height=22 class=xl6553511996 style='height:16.5pt'></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+ </tr>
+ <tr height=22 style='height:16.5pt'>
+  <td height=22 class=xl6311996 colspan=2 style='height:16.5pt'>■ <?if($h_idx!=""){?>현장명: <?=f_hyunjang_name($h_idx)?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?}?><?if(($target_date!="")&&($s_date!="")&&($e_date!="")){?><?=$tt?>: <?=f_date($s_date)?>~ <?=f_date($e_date)?><?}?> 총건수 : <?=f_money($rows_total)?>건</td>
+  <td class=xl6311996 colspan=2></td>
+  <td class=xl6311996></td>
+  <td class=xl6311996></td>
+  <td class=xl6311996></td>
+  <td class=xl6311996></td>
+  <td class=xl6311996></td>
+  <td class=xl6411996>작업자 : <?=$_SESSION["admin_name"]?></td>
+ </tr>
+ <tr height=22 style='height:16.5pt'>
+  <td height=22 class=xl6311996 style='height:16.5pt'></td>
+  <td class=xl6311996></td>
+  <td class=xl6311996></td>
+  <td class=xl6311996></td>
+  <td class=xl6311996></td>
+  <td class=xl6311996></td>
+  <td class=xl6311996></td>
+  <td class=xl6311996></td>
+  <td class=xl6311996></td>
+  <td class=xl6311996></td>
+ </tr>
+ <tr height=26 style='height:19.5pt'>
+  <td height=26 class=xl6511996 style='height:19.5pt'>No</td>
+  <td class=xl6511996 style='border-left:none'>고객고유번호</td>
+  <td class=xl6511996 style='border-left:none'>전입<br>의뢰일</td>
+  <td class=xl6511996 style='border-left:none'>전입<br>수령일</td>
+  <td class=xl6511996 style='border-left:none'>소유주와의관계</td>
+  <td class=xl6611996 width=48 style='border-left:none;width:36pt'>재열람<br>
+    의뢰일</td>
+  <td class=xl6611996 width=48 style='border-left:none;width:36pt'>재열람<br>
+    수령일</td>
+  <td class=xl6511996 style='border-left:none'>재열람확인사항</td>
+  <td class=xl6511996 style='border-left:none'>비고</td>
+  <td class=xl6611996 width=40 style='border-left:none;width:30pt'>담당자<br>
+    (외주)</td>
+ </tr>
+
+
+<?
+
+	$sql = "select * from $board_dbname  $wherequery order by cast(h1 as unsigned) asc,cast(i1 as unsigned) asc ";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	if($rows > 0){
+		if($page) $page=1;
+		$T = 1;
+		$S = 1;
+		$U = 0;
+
+			while($row = $stmt->fetch()){?>
+
+			 <tr class=xl6711996 height=22 style='height:16.5pt'>
+			  <td height=22 class=xl6711996 style='height:16.5pt;border-top:none'><?=$T?></td>
+			  <td class=xl671199611 style='border-top:none;border-left:none'><?=$row[a1]?></td>
+			  <td class=xl6811996 style='border-top:none;border-left:none'><?=f_date($row[junib_request_date])?></td>
+			  <td class=xl6811996 style='border-top:none;border-left:none'><?=f_date($row[junib_s_date])?></td>
+			  <td class=xl6711996 style='border-top:none;border-left:none'><?=f_sou_value($row[sou_relation])?></td>
+			  <td class=xl6811996 style='border-top:none;border-left:none'><?=f_date($row[review_request_date])?></td>
+			  <td class=xl6811996 style='border-top:none;border-left:none'><?=f_date($row[review_s_date])?></td>
+			  <td class=xl6711996 style='border-top:none;border-left:none'><?=f_sou_value($row[review_confirm])?></td>
+			  <td class=xl6711996 style='border-top:none;border-left:none'><?=mb_substr($row[memo],0,10)?></td>
+			  <td class=xl6711996 style='border-top:none;border-left:none'><?=f_id_value($row[damdang_id])?></td>
+			 </tr>
+					
+			<?
+		$T++;
+	  $S++;}
+}else{?>
+              <tr class="title">
+                <td colspan=4 align=center>내용이 없습니다.</td>
+              </tr>
+<?}?>
+
+ <tr height=22 style='height:16.5pt'>
+  <td height=22 class=xl6553511996 style='height:16.5pt'></td>
+  <td class=xl655351199611></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+  <td class=xl6553511996></td>
+ </tr>
+
+ <tr height=22 style='height:16.5pt'>
+  <td colspan=10 height=22 class=xl6911996 style='height:16.5pt'>위 목록으로 전입세대열람을
+  (<span style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>의뢰<span style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>,<span style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp; </span>수령<span
+  style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>) 합니다.</td>
+ </tr>
+ <tr height=22 style='height:16.5pt'>
+  <td height=22 class=xl6911996 style='height:16.5pt'></td>
+  <td class=xl691199611></td>
+  <td class=xl6911996></td>
+  <td class=xl6911996></td>
+  <td class=xl6911996></td>
+  <td class=xl6911996></td>
+  <td class=xl6911996></td>
+  <td class=xl6911996></td>
+  <td class=xl6911996></td>
+  <td class=xl6911996></td>
+ </tr>
+ <tr height=22 style='mso-height-source:userset;height:16.5pt'>
+  <td colspan=10 height=22 class=xl7011996 style='height:16.5pt'><?=f_date($confirm_date)?></td>
+ </tr>
+ <tr height=22 style='mso-height-source:userset;height:16.5pt'>
+  <td height=22 class=xl7011996 style='height:16.5pt'></td>
+  <td class=xl701199611></td>
+  <td class=xl7011996></td>
+  <td class=xl7011996></td>
+  <td class=xl7011996></td>
+  <td class=xl7011996></td>
+  <td class=xl7011996></td>
+  <td class=xl7011996></td>
+  <td class=xl7011996></td>
+  <td class=xl7011996></td>
+ </tr>
+ <tr height=22 style='mso-height-source:userset;height:16.5pt'>
+  <td colspan=10 height=22 class=xl6911996 style='height:16.5pt'>(의뢰인 / 수령인)
+  :<span
+  style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>(인)</td>
+ </tr>
+</table>
+
+</div>
+
+
+<div id="floatMenu" style="position:fixed;text-align:right;width:100%;">
+<input type=button value=" 출력 " id="printx" onclick="f_printx();" style="background-color:#0054FF;color:white;width:50px;height:22px;">&nbsp;&nbsp;</td>
+</div>
+
+<!----------------------------->
+<!--Excel의 웹 페이지 마법사로 게시해서 나온 결과의 끝-->
+<!----------------------------->
+</body>
+
+<script>
+function f_printx(){
+	$("#printx").hide();
+
+    factory.printing.header = "";
+    factory.printing.footer = "";
+    factory.printing.portrait = true;  //true 세로,false 가로
+    factory.printing.leftMargin = 15;
+    factory.printing.topMargin = 0;
+    factory.printing.rightMargin = 15;
+    factory.printing.bottomMargin = 10;
+    var isPrint = factory.printing.Print(false, window); //출력
+}
+$(document).ready(function() { 
+	// 기존 css에서 플로팅 배너 위치(top)값을 가져와 저장한다.
+	var floatPosition = parseInt($("#floatMenu").css('top'));
+	//alert(floatPosition);
+	// 250px 이런식으로 가져오므로 여기서 숫자만 가져온다. parseInt( 값 );
+	//alert(floatPosition); 
+	$(window).scroll(function() {
+		var scrollTop = $(window).scrollTop();
+		var newPosition = "5px"; 
+		$("#floatMenu").stop().animate({
+			"top" : newPosition
+		},300); 
+	}).scroll(); 
+});
+</script>
+
+</html>

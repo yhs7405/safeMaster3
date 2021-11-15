@@ -1,0 +1,337 @@
+<?	include ("../include/dbconn.php");
+	include ("../include/login_ch.php");
+	include ("../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$board_dbname	=	"board_faq";
+
+	$s_1		=	trim($_REQUEST[s_1]);
+	$s_2		=	trim($_REQUEST[s_2]);
+
+	$view_num		=	trim($_REQUEST[view_num]);	//한라인에 몇개를 출력할건지//
+	if($_REQUEST[page]==""){$page=1;}else{$page=$_REQUEST[page];}
+	$Page_List		=	10;							//링크페이지를 몇개씩 보여줄건지.. 1 / 2 / 3
+	if(!$view_num)	$view_num=	20;					//리스트 갯수
+
+	$wherequery = " where 1=1  ";
+
+	if($s_1!="")	$wherequery.= " and ({$s_1} like '%{$s_2}%')";
+
+	//echo "<br><br><br><br>".$wherequery;
+	$rows_total = db_count_all($board_dbname,$wherequery);
+
+?>
+
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+<title>재무돌이</title>
+<?include ("../include/common.php");?>
+</head>
+
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+
+<script>
+
+$(function() {
+		$( ".datepickx" ).datepicker({
+			autosize: true,
+			showOn: "button",
+			buttonImage: "/images/calendar.gif",
+			buttonImageOnly: true,
+			changeMonth: true,
+			changeYear: true,
+			dateFormat: "yymmdd",
+			dayNamesShort:["일","월","화","수","목","금","토"],
+			monthNamesShort:["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"]
+		});
+	 $("img.ui-datepicker-trigger").attr("style", "margin-bottom:4px; vertical-align:middle; cursor: Pointer;");    
+});
+$( ".datepickx" ).datepicker( "option", "dayNamesShort",  [ "Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam" ] );
+</script>
+
+
+
+<body>
+
+<!--header 시작-->
+	<?include ("../include/header.php");?>
+<!--header 종료-->
+
+
+<!--top-메뉴시작-->
+	<?include ("../include/header_menu.php");?>
+<!--top-메뉴종료-->
+
+
+<div id="content">
+
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" title="Go to Home" class="tip-bottom">게시판</a> <a href="#" class="current">FAQ</a> </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+
+			<div  style="width:100%;background-color:#EFEFEF;border-top:1px solid #e7e7e7;border-left:1px solid #e7e7e7;border-right:1px solid #e7e7e7;">
+			<form name=ffx method=post>
+				<input type=hidden name="view_num"  id="view_num"  value="<?=$view_num?>">
+				<input type=hidden name="page"  id="page"  value="<?=$page?>">
+				<table style="background-color:#EFEFEF;">
+				  <thead>
+					<tr>
+					  <th style="text-align:left;margin-top:10px;">
+						  &nbsp;검색&nbsp;<select name=s_1 style="width:80px;">
+						  	<option value="board_subject" <?if($s_1=="board_subject"){?>selected<?}?>>제목</option>
+						  	<option value="board_note" <?if($s_1=="board_note"){?>selected<?}?>>내용</option>
+						  </select>
+						  <input type=text name="s_2" value="<?=$s_2?>" style="width:150px;margin-top:5px;">
+					  </th>
+					  <th>
+						&nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-success" onclick="javascript:f_submitx();" style="background-color:#4374D9;height:30px;width:60px;margin-top:-5px;">조회</button>
+					  </th>
+					</tr>
+				  </thead>
+				</table>
+			</div>
+			</form>
+		</div>
+
+
+	<form name=ffm method="post">
+		<input type=hidden name="list_num"  id="list_num"  value="<?=$view_num?>">
+
+        <div class="widget-box">
+          <div class="widget-content nopadding">
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th  style="font-size:8pt;">No</th>
+                  <th  style="font-size:8pt;">제목</th>
+                  <th  style="font-size:8pt;">작성자</th>
+                  <th  style="font-size:8pt;">조회수</th>
+                  <th  style="font-size:8pt;">작성일</th>
+                </tr>
+              </thead>
+              <tbody>
+
+
+	<?
+	$Link_Value = "?list_num={$view_num}&s_gubun=$s_gubun&s_search=$s_search";
+	$Page_link = _Make_Link($rows_total,$view_num,$Page_List,$page,$Link_Value,$img_pp,$img_p,$img_nn,$img_n);
+
+	$sql = "select * from  board_faq  $wherequery order by  board_uid desc  limit $Page_link[start],$view_num";
+	//echo "<br><br><br>----------".$sql."-------------";
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	if($rows > 0){
+		$T=1;$i=1;
+		while($row = $stmt->fetch()){?>
+
+                <tr class="odd gradeX" style="height:30px;">
+                  <td style="text-align:center;font-size:8pt;"><a href="view.php?board_uid=<?=$row[board_uid]?>"><?=($page-1)*$view_num+$T?></a></td>
+                  <td style="text-align:left;font-size:8pt;" width="70%">&nbsp;<a href="view.php?board_uid=<?=$row[board_uid]?>"><?=stripslashes($row[board_subject])?></a></td>
+                  <td style="text-align:center;font-size:8pt;"><a href="view.php?board_uid=<?=$row[board_uid]?>"><?=f_id_value($row[board_writer])?></a></td>
+                  <td style="text-align:center;font-size:8pt;"><a href="view.php?board_uid=<?=$row[board_uid]?>"><?=f_money($row[board_hit])?></a></td>
+                  <td style="text-align:center;font-size:8pt;"><a href="view.php?board_uid=<?=$row[board_uid]?>"><?=f_date($row[board_insertdate])?></a></td>
+                </tr>
+
+
+	<?$T++;$i++;}
+}else{?>
+              <tr class="title">
+                <td colspan=21 align=center>내용이 없습니다.</td>
+              </tr>
+<?}?>
+
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+		<div class="fg-toolbar ui-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix" style="height:30px;">
+			<div class="dataTables_filter" id="DataTables_Table_0_filter"><label  style="float:left;">페이지당 </label>&nbsp;<select name="view_num" style="width:80px;" onchange="javascript:f_movex(this);">
+					<option selected="selected" value="10" <?if($view_num==10){?>selected<?}?>>10</option>
+					<option value="15" <?if($view_num==15){?>selected<?}?>>15</option>
+					<option value="20" <?if($view_num==20){?>selected<?}?>>20</option>
+					<option value="30" <?if($view_num==30){?>selected<?}?>>30</option>
+					<option value="30" <?if($view_num==50){?>selected<?}?>>50</option>
+					<option value="100" <?if($view_num==100){?>selected<?}?>>100</option>
+					<option value="200" <?if($view_num==200){?>selected<?}?>>200</option>
+					<option value="300" <?if($view_num==300){?>selected<?}?>>300</option>
+				</select>
+			</div>
+
+			<?include $_SERVER["DOCUMENT_ROOT"]."/include/paging.php";?>
+
+			<div style="float:right;margin-top:0px;margin-bottom:10px;margin-right:10px;margin-top:-25px;">
+				<button type="button" class="btn btn-success" onclick="javascript:location.href='regist.php';">글쓰기</button>
+			</div>
+
+		</div>
+      </div>
+    </div>
+	</form>
+
+  </div>
+</div>
+
+<!--bottom-시작-->
+	<?include ("../include/bottom.php");?>
+<!--bottom-종료-->
+
+<script src="/js/common.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+<script>
+
+
+function f_submitx(){
+
+	document.ffx.page.value=1;
+	document.ffx.submit();
+}
+
+function f_submit(){
+	var v = document.ffm;
+	if(confirm("저장하시겠습니까?")){
+		var frm    = document.ffm;
+		var url    = "post.php";
+		var title  = "listpop22";
+		var status = "toolbar=no,directories=no,scrollbars=yes,resizable=no,status=no,menubar=no,width=100, height=100, top=400,left=800"; 
+		var aa2 = window.open("", title,status);
+		frm.target = title;
+		frm.action = url;
+		frm.method = "post";
+		frm.submit();
+		aa2.focus();
+	}
+}
+
+
+function f_excel(){  //엑셀다운
+	var frm    = document.ffx;
+	frm.action = "excel_down.php";
+	frm.method = "post";
+	frm.submit();
+	frm.action = "index.html";
+}
+
+function f_detail_excel(){  //엑셀상세다운
+	var frm    = document.ffx;
+	frm.action = "excel_detail_down.php";
+	frm.method = "post";
+	frm.submit();
+	frm.action = "index.html";
+}
+
+
+function f_apply(){  //적용
+
+	for(i=1;i<=<?=$view_num?>;i++){
+
+		if($("#apply_date").val()!=""){  //날짜일때
+			//alert($("#apply_date").val());
+			if($("input:checkbox[name='biyong_c_date1_"+i+"']").is(":checked")==true){
+				$("input:text[name='biyong_c_date_"+i+"']").val($("#apply_date").val());
+			}
+		}
+		if($("#card_gubun").val()!=""){//카드구분일때
+			if($("input:checkbox[name='card_gubun11_"+i+"']").is(":checked")==true){
+				$("select[name='card_gubun1_"+i+"']").val($("#card_gubun").val());
+			}
+			if($("input:checkbox[name='card_gubun21_"+i+"']").is(":checked")==true){
+				$("select[name='card_gubun2_"+i+"']").val($("#card_gubun").val());
+			}
+		}
+	}
+
+}
+
+
+function f_chogi(){  //초기화
+	if(confirm("초기화 하시겠습니까?")){
+
+			$("#biyong_c_date_ch").prop("checked", false);
+			$("#confirm_date_ch").prop("checked", false);
+			$("#subum_memo_ch").prop("checked", false);
+			$("#ibgum_date1_ch").prop("checked", false);
+			$("#ibgum_money1_ch").prop("checked", false);
+			$("#card_gubun1_ch").prop("checked", false);
+			$("#ibgum_date2_ch").prop("checked", false);
+			$("#ibgum_money2_ch").prop("checked", false);
+			$("#card_gubun2_ch").prop("checked", false);
+
+			$(".biyong_c_date1").prop("checked", false);
+			$(".confirm_date1").prop("checked", false);
+			$(".subum_memo1").prop("checked", false);
+			$(".ibgum_date11").prop("checked", false);
+			$(".ibgum_money11").prop("checked", false);
+			$(".card_gubun11").prop("checked", false);
+			$(".ibgum_date21").prop("checked", false);
+			$(".ibgum_money21").prop("checked", false);
+			$(".card_gubun21").prop("checked", false);
+
+			$(".biyong_c_date_xx").val("");
+			$(".confirm_date_xx").val("");
+			$(".subum_memo_xx").val("");
+			$(".ibgum_date1_xx").val("");
+			$(".ibgum_money1_xx").val("");
+			$(".card_gubun1_xx").val("");
+			$(".ibgum_date2_xx").val("");
+			$(".ibgum_money2_xx").val("");
+			$(".card_gubun2_xx").val("");
+			
+	}
+}
+
+
+
+$(document).ready(function(){
+	$("#biyong_c_date_ch").click(function(e){ 
+		if($(this).is(":checked")){
+			//alert(1);
+			$(".biyong_c_date1").prop("checked", true);
+		}else{
+			//alert(0);
+			$(".biyong_c_date1").prop("checked", false);
+		}
+	});
+
+	$("#card_gubun1_ch").click(function(e){ 
+		if($(this).is(":checked")){
+			$(".card_gubun11").prop("checked", true);
+		}else{
+			$(".card_gubun11").prop("checked", false);
+		}
+	});
+
+
+	$("#card_gubun2_ch").click(function(e){ 
+		if($(this).is(":checked")){
+			$(".card_gubun21").prop("checked", true);
+		}else{
+			$(".card_gubun21").prop("checked", false);
+		}
+	});
+
+
+});
+
+</script>
+
+</body>
+</html>

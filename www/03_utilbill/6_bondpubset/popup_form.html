@@ -1,0 +1,21 @@
+<?	include ("../include/dbconn.php");
+	include ("../include/login_ch.php");
+	include ("../include/function.php");
+?>
+
+
+<!DOCTYPE html>
+<html lang="kr">
+<?if($_REQUEST[contents]==""){?>
+	<Br><center><H3>업로드가 완료되었습니다.</H3><Br><?=$_REQUEST[contents]?><Br><center><?=$_REQUEST[cnt]?>개의 데이터가 성공적으로 입력되었습니다.<Br><Br><Br>
+<?}else{?>
+	<?if($_REQUEST[cnt]!="0"){?>
+		<Br><center><H3>업로드가 완료되었습니다.</H3><Br><?=$_REQUEST[contents]?><Br><center><?=$_REQUEST[cnt]?>개의 데이터가 성공적으로 입력되었습니다.<Br><Br><Br>
+	<?}else{?>
+		<Br><center><H3>업로드가 완료되었습니다.</H3><Br><?=$_REQUEST[contents]?><Br><center>데이터가 입력되지 못하였습니다. 데이터를 확인하여 주시기 바랍니다.<Br><Br><Br>
+	<?}?>
+<?}?>
+
+<Br><center><button onclick="javascript:window.close();">창닫기</button></center><Br>
+
+</html>

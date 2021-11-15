@@ -1,0 +1,230 @@
+<?	include ("../../include/dbconn.php");
+	include ("../../include/login_ch.php");
+	include ("../../include/function.php");
+
+	//error_reporting(E_ALL);
+	//ini_set("display_errors", 1);
+
+	$board_dbname	=	"tbl_login_user";
+
+	$job		=	trim($_REQUEST[job]);
+	$job_data		=	trim($_REQUEST[job_data]);
+	$s_date			=	trim($_REQUEST[s_date]);
+	$e_date			=	trim($_REQUEST[e_date]);
+
+	if($s_date=="")		$s_date=date("Ymd");
+	if($e_date=="")		$e_date=date("Ymd");
+
+
+//	$list_num		=	trim($_REQUEST[list_num]);
+//	$page			=	trim($_REQUEST[page]);
+//	$view_num		=	trim($_REQUEST[list_num]);	//한라인에 몇개를 출력할건지//
+//	$Page_List		=	10;							//링크페이지를 몇개씩 보여줄건지.. 1 / 2 / 3
+//	if(!$view_num)	$view_num=	50;					//리스트 갯수
+
+
+	$view_num		=	trim($_REQUEST[view_num]);	//한라인에 몇개를 출력할건지//
+	if($_REQUEST[page]==""){$page=1;}else{$page=$_REQUEST[page];}
+	$Page_List		=	10;							//링크페이지를 몇개씩 보여줄건지.. 1 / 2 / 3
+	if(!$view_num)	$view_num=	100;					//리스트 갯수
+
+
+
+	$wherequery = " where 1=1  ";
+	$wherequery.= " and login_time between '{$s_date}000000' and '{$e_date}999999'  ";
+	if($job!="")			$wherequery.= " and job = '{$job}' ";
+	if($job_data!="")			$wherequery.= " and job_data like '%{$job_data}%' ";
+
+
+	$rows_total = db_count_all($board_dbname,$wherequery);
+
+?>
+
+
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+<title>재무돌이</title>
+<?include ("../../include/common.php");?>
+</head>
+
+<body>
+
+<!--header 시작-->
+	<?include ("../../include/header.php");?>
+<!--header 종료-->
+
+
+<!--top-메뉴시작-->
+	<?include ("../../include/header_menu.php");?>
+<!--top-메뉴종료-->
+
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+
+<script>
+
+$(function() {
+		$( ".datepickx" ).datepicker({
+			autosize: true,
+			showOn: "button",
+			buttonImage: "/images/calendar.gif",
+			buttonImageOnly: true,
+			changeMonth: true,
+			changeYear: true,
+			dateFormat: "yymmdd",
+			dayNamesShort:["일","월","화","수","목","금","토"],
+			monthNamesShort:["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"]
+		});
+	 $("img.ui-datepicker-trigger").attr("style", "margin-bottom:4px; vertical-align:middle; cursor: Pointer;");
+});
+$( ".datepickx" ).datepicker( "option", "dayNamesShort",  [ "Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam" ] );
+</script>
+
+
+<div id="content">
+
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" title="Go to Home" class="tip-bottom">계정관리</a> <a href="#" class="current">수정/삭제 이력</a> </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+
+		<div class="widget-content nopadding">
+		<div  style="width:100%;background-color:#EFEFEF;border-top:1px solid #e7e7e7;border-left:1px solid #e7e7e7;border-right:1px solid #e7e7e7;">
+		<form name=ffx method=post>
+			<input type=hidden name="view_num"  id="view_num"  value="<?=$view_num?>">
+			<input type=hidden name="page"  id="page"  value="<?=$page?>">
+			<table style="background-color:#EFEFEF;">
+			  <thead>
+				<tr>
+				  <th style="text-align:left;margin-top:20px;" valign="top">
+					  &nbsp;&nbsp;&nbsp;&nbsp;작업데이터&nbsp;&nbsp;&nbsp;<input type=text name="job_data" value="<?=$job_data?>">
+					  &nbsp;&nbsp;&nbsp;&nbsp;작업구분&nbsp;&nbsp;&nbsp;<select name=job style="width:100px;margin-top:7px;">
+					  <option value="" >--선택--</option>
+					  <option value="삭제" <?if($job=="삭제"){?>selected<?}?>>삭제</option>
+					  <option value="수정" <?if($job=="수정"){?>selected<?}?>>수정</option>
+					  <option value="로그인" <?if($job=="로그인"){?>selected<?}?>>로그인</option>
+					  </select>
+					  &nbsp;&nbsp;&nbsp;&nbsp;기 간&nbsp;&nbsp;&nbsp;<input type=text name="s_date" id="s_date" value="<?=$s_date?>"  class="datepickx" size=8 maxlength=8 style="width:80px;height:20px;">~<input type=text name="e_date" id="e_date" value="<?=$e_date?>"  class="datepickx" size=8 maxlength=8 style="width:80px;height:20px;">
+					  &nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-success" onclick="javascript:f_submit();" style="background-color:#4374D9;height:30px;width:60px;margin-top:-2px;">조회</button>
+				  </th>
+				</tr>
+			  </thead>
+			</table>
+		</form>
+		</div>
+		</div>
+
+
+		<form name=ffm method="post">
+			<input type=hidden name="list_num"  id="list_num"  value="<?=$view_num?>">
+        <div class="widget-box">
+          <div class="widget-content nopadding">
+
+
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>작업시간</th>
+                  <th>작업자ID</th>
+                  <th>작업자명</th>
+                  <th>접속자IP</th>
+                  <th>작업화면</th>
+                  <th>작업경로</th>
+                  <th>작업내용</th>
+                  <th>작업데이터</th>
+                </tr>
+              </thead>
+              <tbody>
+
+	<?
+	$Link_Value = "?list_num={$view_num}&s_gubun=$s_gubun&s_search=$s_search";
+	$Page_link = _Make_Link($rows_total,$view_num,$Page_List,$page,$Link_Value,$img_pp,$img_p,$img_nn,$img_n);
+
+	$sql = "select * from $board_dbname  $wherequery order by  cast(login_time as unsigned) desc limit $Page_link[start],$view_num";
+	//echo $sql;
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+
+	$rows = $pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+
+	if($rows > 0){
+		$T=1;$i=1;
+			while($row = $stmt->fetch()){?>
+
+                <tr class="odd gradeX">
+                  <td style="text-align:center;"><?=($page-1)*$view_num+$T?></td>
+                  <td style="text-align:center;"><?=f_date_full($row[login_time])?></td>
+                  <td style="text-align:center;"><?=$row[login_user]?></td>
+                  <td style="text-align:center;"><?=f_id_value($row[login_user])?></td>
+                  <td style="text-align:center;"><?=$row[user_ip]?></td>
+                  <td style="text-align:center;"><?=$row[job_ui]?></td>
+                  <td style="text-align:center;"><?=$row[job_url]?></td>
+                  <td style="text-align:center;"><?=$row[job]?></td>
+                  <td style="text-align:center;"><?=$row[job_data]?></td>
+                </tr>
+
+	<?$T++;$i++;}
+}else{?>
+              <tr class="title">
+                <td colspan=9 align=center>내용이 없습니다.</td>
+              </tr>
+<?}?>
+
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+		<div class="fg-toolbar ui-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix" style="height:30px;">
+			<div class="dataTables_filter" id="DataTables_Table_0_filter"><label  style="float:left;">페이지당 </label>&nbsp;<select name="view_num" style="width:80px;" onchange="javascript:f_movex(this);">
+					<option selected="selected" value="10" <?if($view_num==10){?>selected<?}?>>10</option>
+					<option value="15" <?if($view_num==15){?>selected<?}?>>15</option>
+					<option value="20" <?if($view_num==20){?>selected<?}?>>20</option>
+					<option value="30" <?if($view_num==30){?>selected<?}?>>30</option>
+					<option value="30" <?if($view_num==50){?>selected<?}?>>50</option>
+					<option value="100" <?if($view_num==100){?>selected<?}?>>100</option>
+					<option value="200" <?if($view_num==200){?>selected<?}?>>200</option>
+					<option value="300" <?if($view_num==300){?>selected<?}?>>300</option>
+				</select>
+			</div>
+			<?include $_SERVER["DOCUMENT_ROOT"]."/include/paging.php";?>
+
+		</div>
+
+		</form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--bottom-시작-->
+	<?include ("../../include/bottom.php");?>
+<!--bottom-종료-->
+
+
+<script src="/js/common.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+<script>
+function f_submit(){
+	document.ffx.page.value=1;
+	document.ffx.action = "index.html";
+	document.ffx.submit();
+}
+
+</script>
+
+</body>
+</html>
